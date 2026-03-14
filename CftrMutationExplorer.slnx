@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CftrMutationExplorer.App/CftrMutationExplorer.App.csproj" />
+    <Project Path="src/CftrMutationExplorer.Core/CftrMutationExplorer.Core.csproj" />
+    <Project Path="src/CftrMutationExplorer.Infrastructure/CftrMutationExplorer.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CftrMutationExplorer.Tests/CftrMutationExplorer.Tests.csproj" />
+  </Folder>
+</Solution>

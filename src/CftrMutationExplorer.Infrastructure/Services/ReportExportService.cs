@@ -1,0 +1,137 @@
+using System.Text;
+using CftrMutationExplorer.Core.Interfaces;
+using CftrMutationExplorer.Core.Models;
+
+namespace CftrMutationExplorer.Infrastructure.Services;
+
+public class ReportExportService : IReportExportService
+{
+    public async Task ExportAnnotationsCsvAsync(string filePath, List<Annotation> annotations)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Id,Title,Note,Category,Chain,Residue,Region,Created,Modified");
+
+        foreach (var a in annotations)
+        {
+            sb.AppendLine(string.Join(",",
+                a.Id,
+                CsvEscape(a.Title),
+                CsvEscape(a.Note),
+                a.Category,
+                a.TargetChainId?.ToString() ?? "",
+                a.TargetResidueNumber?.ToString() ?? "",
+                CsvEscape(a.TargetRegionDescription ?? ""),
+                a.CreatedAt.ToString("O"),
+                a.ModifiedAt?.ToString("O") ?? ""
+            ));
+        }
+
+        await File.WriteAllTextAsync(filePath, sb.ToString());
+    }
+
+    public async Task ExportComparisonReportAsync(string filePath, StructureComparisonResult comparison, List<Annotation>? annotations = null)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("# CFTR Mutation Explorer — Comparison Report");
+        sb.AppendLine();
+        sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine();
+
+        sb.AppendLine("## Structures");
+        sb.AppendLine();
+        sb.AppendLine($"| Property | Reference | Mutant |");
+        sb.AppendLine($"|----------|-----------|--------|");
+        sb.AppendLine($"| File | {comparison.ReferenceFileName} | {comparison.MutantFileName} |");
+        sb.AppendLine($"| Chains | {comparison.ReferenceChainCount} | {comparison.MutantChainCount} |");
+        sb.AppendLine($"| Residues | {comparison.ReferenceResidueCount} | {comparison.MutantResidueCount} |");
+        sb.AppendLine($"| Atoms | {comparison.ReferenceAtomCount} | {comparison.MutantAtomCount} |");
+        sb.AppendLine();
+
+        sb.AppendLine("## Comparison Metrics");
+        sb.AppendLine();
+        sb.AppendLine($"- **Simplified RMSD**: {comparison.RmsdDisplayText}");
+        sb.AppendLine($"- **Residue Difference**: {comparison.ResidueDifference}");
+        sb.AppendLine($"- **Atom Difference**: {comparison.AtomDifference}");
+        sb.AppendLine();
+
+        if (comparison.MissingInMutant.Count > 0)
+        {
+            sb.AppendLine("## Missing in Mutant");
+            sb.AppendLine();
+            foreach (var m in comparison.MissingInMutant)
+                sb.AppendLine($"- {m}");
+            sb.AppendLine();
+        }
+
+        if (comparison.MissingInReference.Count > 0)
+        {
+            sb.AppendLine("## Missing in Reference");
+            sb.AppendLine();
+            foreach (var m in comparison.MissingInReference)
+                sb.AppendLine($"- {m}");
+            sb.AppendLine();
+        }
+
+        if (comparison.ResidueComparisons.Any(e => e.IsAltered || e.IsMissing))
+        {
+            sb.AppendLine("## Altered Residues");
+            sb.AppendLine();
+            sb.AppendLine("| Chain | # | Reference | Mutant | Centroid Δ (Å) | Status |");
+            sb.AppendLine("|-------|---|-----------|--------|----------------|--------|");
+            foreach (var entry in comparison.ResidueComparisons.Where(e => e.IsAltered || e.IsMissing))
+            {
+                var dist = entry.CentroidDistance.HasValue ? $"{entry.CentroidDistance.Value:F2}" : "N/A";
+                var status = entry.IsMissing ? "Missing" : "Altered";
+                sb.AppendLine($"| {entry.ChainId} | {entry.ResidueNumber} | {entry.ReferenceResidueName} | {entry.MutantResidueName} | {dist} | {status} |");
+            }
+            sb.AppendLine();
+        }
+
+        if (annotations != null && annotations.Count > 0)
+        {
+            sb.AppendLine("## Annotations");
+            sb.AppendLine();
+            foreach (var a in annotations)
+            {
+                sb.AppendLine($"### {a.Title}");
+                sb.AppendLine();
+                sb.AppendLine($"- **Category**: {a.Category}");
+                if (a.TargetResidueNumber.HasValue)
+                    sb.AppendLine($"- **Target**: Residue {a.TargetResidueNumber} (Chain {a.TargetChainId})");
+                if (!string.IsNullOrEmpty(a.Note))
+                    sb.AppendLine($"- **Note**: {a.Note}");
+                sb.AppendLine($"- **Created**: {a.CreatedAt:g}");
+                sb.AppendLine();
+            }
+        }
+
+        if (comparison.Warnings.Count > 0)
+        {
+            sb.AppendLine("## Warnings");
+            sb.AppendLine();
+            foreach (var w in comparison.Warnings)
+                sb.AppendLine($"- {w}");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("---");
+        sb.AppendLine("*Report generated by CFTR Mutation Explorer (demo application)*");
+        sb.AppendLine("*Metrics are simplified approximations, not publication-grade calculations.*");
+
+        await File.WriteAllTextAsync(filePath, sb.ToString());
+    }
+
+    public async Task ExportScreenshotAsync(string filePath, byte[] imageData)
+    {
+        await File.WriteAllBytesAsync(filePath, imageData);
+    }
+
+    private static string CsvEscape(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        return value;
+    }
+}

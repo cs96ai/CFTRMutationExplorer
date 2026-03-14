@@ -1,0 +1,46 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+## VS / Rider
+.vs/
+.idea/
+*.rsuser
+*.DotSettings.user
+launchSettings.json
+
+## SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+## OS files
+Thumbs.db
+.DS_Store
+
+## Agent artifacts
+agent-transcripts/
+terminals/
+mcps/
+assets/
+agent-tools/
