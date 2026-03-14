@@ -34,6 +34,14 @@ launchSettings.json
 *.db-shm
 *.db-wal
 
+## Python
+__pycache__/
+*.pyc
+*.pyo
+
+## mRNA optimization results (large checkpoint files with populations)
+scripts/mrna_service/results/
+
 ## OS files
 Thumbs.db
 .DS_Store

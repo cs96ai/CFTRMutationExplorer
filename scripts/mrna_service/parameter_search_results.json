@@ -1,0 +1,494 @@
+{
+  "timestamp": "2026-03-14T12:54:41.211387",
+  "trial_generations": 30,
+  "seed": 42,
+  "total_trials": 78,
+  "champion": {
+    "population_size": 750,
+    "mutation_rate": 0.03,
+    "crossover_rate": 0.75,
+    "weights": [
+      1.0,
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "tournament_size": 2
+  },
+  "champion_fitness": 0.9493988522036335,
+  "phase1_top5": [
+    {
+      "label": "mr=0.05 cr=0.80",
+      "best": 0.8982283516389914,
+      "avg": 0.8814125099619667,
+      "auc": 0.8766203943589599
+    },
+    {
+      "label": "mr=0.05 cr=0.85",
+      "best": 0.8960044948964739,
+      "avg": 0.8824711534076173,
+      "auc": 0.8789173566120635
+    },
+    {
+      "label": "mr=0.05 cr=0.95",
+      "best": 0.8935180933536657,
+      "avg": 0.8780213910303073,
+      "auc": 0.8745614606465681
+    },
+    {
+      "label": "mr=0.05 cr=0.90",
+      "best": 0.8933841219807047,
+      "avg": 0.8789051904125038,
+      "auc": 0.8741737520943663
+    },
+    {
+      "label": "mr=0.05 cr=0.70",
+      "best": 0.8933397873009549,
+      "avg": 0.8820007985287014,
+      "auc": 0.8792027651331609
+    }
+  ],
+  "phase2_top5": [
+    {
+      "label": "pop=750 tourn=2",
+      "best": 0.9159265066972998,
+      "avg": 0.9015017410395019,
+      "auc": 0.8937764448016366
+    },
+    {
+      "label": "pop=500 tourn=2",
+      "best": 0.9141242944528087,
+      "avg": 0.8996421679216758,
+      "auc": 0.8908111454779906
+    },
+    {
+      "label": "pop=250 tourn=2",
+      "best": 0.9136039781908528,
+      "avg": 0.903453308582625,
+      "auc": 0.8956132560936242
+    },
+    {
+      "label": "pop=500 tourn=5",
+      "best": 0.9120219181849077,
+      "avg": 0.8990968733176165,
+      "auc": 0.892396891410326
+    },
+    {
+      "label": "pop=1000 tourn=7",
+      "best": 0.9115582524124027,
+      "avg": 0.8998999125550421,
+      "auc": 0.8910751836643748
+    }
+  ],
+  "phase3_all": [
+    {
+      "label": "weights=top3_only",
+      "best": 0.9409117667305709,
+      "avg": 0.9186993689113424,
+      "auc": 0.8953116599015057
+    },
+    {
+      "label": "weights=cai_heavy",
+      "best": 0.9039386739334985,
+      "avg": 0.8854049727711616,
+      "auc": 0.9039386739334987
+    },
+    {
+      "label": "weights=balanced",
+      "best": 0.8931615420946523,
+      "avg": 0.8755124568431749,
+      "auc": 0.8752516658747836
+    },
+    {
+      "label": "weights=aggressive",
+      "best": 0.890795973090418,
+      "avg": 0.8741319833572422,
+      "auc": 0.8750721085625407
+    },
+    {
+      "label": "weights=stability_focus",
+      "best": 0.8891582884829942,
+      "avg": 0.877893399829232,
+      "auc": 0.8796231917255929
+    },
+    {
+      "label": "weights=immune_focus",
+      "best": 0.8779545619830341,
+      "avg": 0.8584679489088608,
+      "auc": 0.8613354494412581
+    },
+    {
+      "label": "weights=equal",
+      "best": 0.870816808546451,
+      "avg": 0.8530858760181718,
+      "auc": 0.8482517031631609
+    }
+  ],
+  "phase4_top5": [
+    {
+      "label": "fine mr=0.030 cr=0.750",
+      "best": 0.9493988522036335,
+      "avg": 0.9435372204853573,
+      "auc": 0.9082985357631469
+    },
+    {
+      "label": "fine mr=0.030 cr=0.800",
+      "best": 0.9481430419470468,
+      "avg": 0.9432376789864761,
+      "auc": 0.9060824125604751
+    },
+    {
+      "label": "fine mr=0.030 cr=0.780",
+      "best": 0.9480234948982408,
+      "avg": 0.9419707760671152,
+      "auc": 0.9074655005882691
+    },
+    {
+      "label": "fine mr=0.030 cr=0.820",
+      "best": 0.9479073453141756,
+      "avg": 0.9423590191052699,
+      "auc": 0.9054466535268476
+    },
+    {
+      "label": "fine mr=0.030 cr=0.850",
+      "best": 0.9477595854002699,
+      "avg": 0.9434496132343759,
+      "auc": 0.9115874061397914
+    }
+  ],
+  "top15": [
+    {
+      "label": "fine mr=0.030 cr=0.750",
+      "best": 0.9493988522036335,
+      "avg": 0.9435372204853573,
+      "auc": 0.9082985357631469,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.03,
+        "crossover_rate": 0.75,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.030 cr=0.750"
+      }
+    },
+    {
+      "label": "fine mr=0.030 cr=0.800",
+      "best": 0.9481430419470468,
+      "avg": 0.9432376789864761,
+      "auc": 0.9060824125604751,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.03,
+        "crossover_rate": 0.8,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.030 cr=0.800"
+      }
+    },
+    {
+      "label": "fine mr=0.030 cr=0.780",
+      "best": 0.9480234948982408,
+      "avg": 0.9419707760671152,
+      "auc": 0.9074655005882691,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.03,
+        "crossover_rate": 0.78,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.030 cr=0.780"
+      }
+    },
+    {
+      "label": "fine mr=0.030 cr=0.820",
+      "best": 0.9479073453141756,
+      "avg": 0.9423590191052699,
+      "auc": 0.9054466535268476,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.03,
+        "crossover_rate": 0.82,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.030 cr=0.820"
+      }
+    },
+    {
+      "label": "fine mr=0.030 cr=0.850",
+      "best": 0.9477595854002699,
+      "avg": 0.9434496132343759,
+      "auc": 0.9115874061397914,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.03,
+        "crossover_rate": 0.85,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.030 cr=0.850"
+      }
+    },
+    {
+      "label": "fine mr=0.050 cr=0.750",
+      "best": 0.9414693880488008,
+      "avg": 0.9161739976066652,
+      "auc": 0.8974979251508881,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.75,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.050 cr=0.750"
+      }
+    },
+    {
+      "label": "fine mr=0.050 cr=0.780",
+      "best": 0.9413937894912626,
+      "avg": 0.9183613010100101,
+      "auc": 0.8957478480150659,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.78,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.050 cr=0.780"
+      }
+    },
+    {
+      "label": "weights=top3_only",
+      "best": 0.9409117667305709,
+      "avg": 0.9186993689113424,
+      "auc": 0.8953116599015057,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.8,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "weights=top3_only"
+      }
+    },
+    {
+      "label": "fine mr=0.050 cr=0.850",
+      "best": 0.9402343798131714,
+      "avg": 0.9239706844419261,
+      "auc": 0.8958595312244303,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.85,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.050 cr=0.850"
+      }
+    },
+    {
+      "label": "fine mr=0.050 cr=0.800",
+      "best": 0.9392470288757582,
+      "avg": 0.9158077165753239,
+      "auc": 0.8914722200983586,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.8,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.050 cr=0.800"
+      }
+    },
+    {
+      "label": "fine mr=0.050 cr=0.820",
+      "best": 0.9388358760374681,
+      "avg": 0.9213410425734114,
+      "auc": 0.8961250447496144,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.05,
+        "crossover_rate": 0.82,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.050 cr=0.820"
+      }
+    },
+    {
+      "label": "fine mr=0.070 cr=0.750",
+      "best": 0.929864880323302,
+      "avg": 0.8859505031511951,
+      "auc": 0.8788890676871979,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.07,
+        "crossover_rate": 0.75,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.070 cr=0.750"
+      }
+    },
+    {
+      "label": "fine mr=0.070 cr=0.820",
+      "best": 0.9254145392724118,
+      "avg": 0.8881227631899595,
+      "auc": 0.8788919492406265,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.07,
+        "crossover_rate": 0.82,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.070 cr=0.820"
+      }
+    },
+    {
+      "label": "fine mr=0.070 cr=0.780",
+      "best": 0.9211027591519475,
+      "avg": 0.8846598715168642,
+      "auc": 0.8793189377084328,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.07,
+        "crossover_rate": 0.78,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.070 cr=0.780"
+      }
+    },
+    {
+      "label": "fine mr=0.070 cr=0.850",
+      "best": 0.9194059341301378,
+      "avg": 0.8868436111982464,
+      "auc": 0.8817660361938515,
+      "config": {
+        "population_size": 750,
+        "mutation_rate": 0.07,
+        "crossover_rate": 0.85,
+        "weights": [
+          1.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tournament_size": 2,
+        "label": "fine mr=0.070 cr=0.850"
+      }
+    }
+  ]
+}

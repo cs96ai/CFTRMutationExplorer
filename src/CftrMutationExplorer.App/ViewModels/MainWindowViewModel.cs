@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CftrMutationExplorer.Core.Interfaces;
 using CftrMutationExplorer.Core.Models;
+using CftrMutationExplorer.Infrastructure.Services.Mrna;
 
 namespace CftrMutationExplorer.App.ViewModels;
 
@@ -39,6 +40,9 @@ public partial class MainWindowViewModel : ObservableObject
     private BindingPocketViewModel _bindingPockets;
 
     [ObservableProperty]
+    private MrnaDesignerViewModel _mrnaDesigner;
+
+    [ObservableProperty]
     private string _statusMessage = "Ready — Load a protein structure to begin";
 
     [ObservableProperty]
@@ -52,7 +56,9 @@ public partial class MainWindowViewModel : ObservableObject
         IStructureComparisonService comparisonService,
         IAnnotationRepository annotationRepository,
         IReportExportService reportExportService,
-        IBindingPocketService bindingPocketService)
+        IBindingPocketService bindingPocketService,
+        PythonServiceManager pythonServiceManager,
+        MrnaApiClient mrnaApiClient)
     {
         _parser = parser;
         _comparisonService = comparisonService;
@@ -66,6 +72,7 @@ public partial class MainWindowViewModel : ObservableObject
         _annotationList = new AnnotationListViewModel(annotationRepository);
         _export = new ExportViewModel(reportExportService, annotationRepository);
         _bindingPockets = new BindingPocketViewModel(bindingPocketService);
+        _mrnaDesigner = new MrnaDesignerViewModel(pythonServiceManager, mrnaApiClient);
 
         _referenceLoader.StructureLoaded += OnStructureLoaded;
         _mutantLoader.StructureLoaded += OnStructureLoaded;

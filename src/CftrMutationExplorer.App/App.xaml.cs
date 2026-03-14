@@ -3,6 +3,7 @@ using CftrMutationExplorer.Core.Interfaces;
 using CftrMutationExplorer.Infrastructure.Parsing;
 using CftrMutationExplorer.Infrastructure.Persistence;
 using CftrMutationExplorer.Infrastructure.Services;
+using CftrMutationExplorer.Infrastructure.Services.Mrna;
 using CftrMutationExplorer.App.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,12 @@ public partial class App : Application
         services.AddSingleton<ISessionPersistenceService, SqliteSessionPersistenceService>();
         services.AddSingleton<IReportExportService, ReportExportService>();
         services.AddSingleton<IBindingPocketService, BindingPocketService>();
+        services.AddSingleton<ICodonScoringService, CodonScoringService>();
+        services.AddSingleton<IRnaFoldingService, RnaFoldingService>();
+        services.AddSingleton<IMrnaOptimizationService, MrnaOptimizationService>();
+
+        services.AddSingleton<PythonServiceManager>();
+        services.AddSingleton<MrnaApiClient>();
 
         services.AddSingleton<MainWindowViewModel>();
 

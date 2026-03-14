@@ -1,0 +1,497 @@
+<UserControl x:Class="CftrMutationExplorer.App.Views.MrnaDesignerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             Background="{StaticResource PrimaryDarkBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="340" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Configuration Panel -->
+        <Border Grid.Column="0" Background="{StaticResource SurfaceDarkBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8">
+                <StackPanel>
+
+                    <!-- Service Status -->
+                    <TextBlock Text="mRNA THERAPY DESIGNER" Style="{StaticResource SectionHeader}" />
+                    <TextBlock Text="GPU-accelerated mRNA optimization via Python service"
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,0,0,4" />
+
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,8">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <Ellipse Width="10" Height="10" DockPanel.Dock="Left" Margin="0,0,6,0"
+                                         VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="#FF4444" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsServiceConnected}" Value="True">
+                                                    <Setter Property="Fill" Value="#44FF44" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="{Binding ServiceStatus}"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </DockPanel>
+                            <DockPanel>
+                                <Button Content="▶ Start" Style="{StaticResource AccentButton}"
+                                        Command="{Binding StartServiceCommand}"
+                                        IsEnabled="{Binding IsServiceConnected, Converter={StaticResource InverseBool}}"
+                                        Width="80" DockPanel.Dock="Left" Margin="0,0,4,0" />
+                                <Button Content="■ Stop"
+                                        Command="{Binding StopServiceCommand}"
+                                        IsEnabled="{Binding IsServiceConnected}"
+                                        Width="70" DockPanel.Dock="Left" Margin="0,0,4,0" />
+                                <Button Content="↻ Restart"
+                                        Command="{Binding RestartServiceCommand}"
+                                        Width="80" DockPanel.Dock="Left" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Load Sequence -->
+                    <Button Content="Load CFTR Sequence" Style="{StaticResource AccentButton}"
+                            Command="{Binding LoadCftrSequenceCommand}"
+                            IsEnabled="{Binding IsOptimizing, Converter={StaticResource InverseBool}}"
+                            Margin="0,0,0,4" />
+
+                    <TextBlock Text="{Binding ProteinSummary}"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="10"
+                               TextWrapping="Wrap" Margin="0,0,0,12"
+                               Visibility="{Binding IsSequenceLoaded, Converter={StaticResource BoolToVisibility}}" />
+
+                    <!-- GA Parameters -->
+                    <TextBlock Text="OPTIMIZATION PARAMETERS" Style="{StaticResource SectionHeader}" />
+
+                    <Border Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="70" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Population Size" Style="{StaticResource MetricLabel}" VerticalAlignment="Center" />
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PopulationSize}" />
+
+                                <TextBlock Grid.Row="1" Text="Crossover Rate" Style="{StaticResource MetricLabel}" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CrossoverRate}" Margin="0,4,0,0" />
+
+                                <TextBlock Grid.Row="2" Text="Mutation Rate" Style="{StaticResource MetricLabel}" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MutationRate}" Margin="0,4,0,0" />
+
+                                <TextBlock Grid.Row="3" Text="Fitness Threshold" Style="{StaticResource MetricLabel}" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding FitnessThreshold}" Margin="0,4,0,0" />
+
+                                <TextBlock Grid.Row="4" Text="Checkpoint Every (gens)" Style="{StaticResource MetricLabel}" VerticalAlignment="Center" Margin="0,4,0,0" />
+                                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding CheckpointInterval}" Margin="0,4,0,0" />
+                            </Grid>
+                            <TextBlock Text="Runs continuously until threshold or manually stopped."
+                                       Foreground="{StaticResource TextMutedBrush}" FontSize="10"
+                                       TextWrapping="Wrap" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Objective Weights -->
+                    <TextBlock Text="OBJECTIVE WEIGHTS" Style="{StaticResource SectionHeader}" />
+                    <Border Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightCai, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="CAI (translation)" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightCai}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightGc, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="GC Content" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightGc}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightCpg, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="CpG Depletion" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightCpg}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightUridine, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="Uridine Reduction" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightUridine}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightRareCodons, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="Rare Codon Avoid" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightRareCodons}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="{Binding WeightRepeats, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="Repeat Avoidance" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightRepeats}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                            <DockPanel>
+                                <TextBlock Text="{Binding WeightCodonPair, StringFormat='{}{0:F1}'}" Width="28" DockPanel.Dock="Right"
+                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextAlignment="Right" />
+                                <TextBlock Text="Codon Pair Bias" Style="{StaticResource MetricLabel}" Width="110" />
+                                <Slider Value="{Binding WeightCodonPair}" Minimum="0" Maximum="1" SmallChange="0.1"
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Start / Stop -->
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="▶ Start Optimization" Style="{StaticResource AccentButton}"
+                                Command="{Binding StartOptimizationCommand}"
+                                IsEnabled="{Binding IsSequenceLoaded}"
+                                Visibility="{Binding IsOptimizing, Converter={StaticResource InverseBoolToVisibility}}"
+                                Margin="0,0,8,0" />
+                        <Button Content="■ Stop" Style="{StaticResource AccentButton}"
+                                Command="{Binding StopOptimizationCommand}"
+                                Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+
+                    <!-- Live Stats -->
+                    <Border Style="{StaticResource CardBorder}" Margin="0,8,0,0"
+                            Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBlock Text="LIVE STATS" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentGreenBrush}" FontSize="12" Margin="0,0,0,4" />
+                            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                <Run Text="Generation:  " /><Run Text="{Binding CurrentGeneration, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                <Run Text="Best:        " /><Run Text="{Binding BestFitness, StringFormat=F4, Mode=OneWay}" Foreground="{StaticResource AccentGreenBrush}" />
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                <Run Text="Average:     " /><Run Text="{Binding AvgFitness, StringFormat=F4, Mode=OneWay}" Foreground="{StaticResource AccentBlueBrush}" />
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                <Run Text="Pareto Size: " /><Run Text="{Binding ParetoFrontSize, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </TextBlock>
+                            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                <Run Text="Seq/sec:     " /><Run Text="{Binding SequencesPerSecond, StringFormat=N0, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Previous Runs -->
+                    <TextBlock Text="PREVIOUS RUNS" Style="{StaticResource SectionHeader}" Margin="0,12,0,4" />
+                    <Border Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <Button Content="Refresh" Command="{Binding LoadPreviousRunsCommand}"
+                                    HorizontalAlignment="Left" Margin="0,0,0,6" />
+                            <ListBox ItemsSource="{Binding PreviousRuns}"
+                                     SelectedItem="{Binding SelectedPreviousRun}"
+                                     Background="Transparent" BorderThickness="0"
+                                     MaxHeight="140">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="10"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button Content="Load" Command="{Binding LoadSelectedRunCommand}" Margin="0,0,6,0" />
+                                <Button Content="Resume" Command="{Binding ResumeSelectedRunCommand}"
+                                        IsEnabled="{Binding IsOptimizing, Converter={StaticResource InverseBool}}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Right: Results & Charts -->
+        <TabControl Grid.Column="1" Background="{StaticResource PrimaryDarkBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" Padding="0">
+
+            <!-- Progress Tab -->
+            <TabItem Header="Progress">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Progress Info -->
+                    <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ProgressText}" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentBlueBrush}" FontSize="14"
+                                       TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Generation" Style="{StaticResource MetricLabel}" />
+                                    <TextBlock Text="{Binding CurrentGeneration}" Style="{StaticResource MetricValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Best Fitness" Style="{StaticResource MetricLabel}" />
+                                    <TextBlock Text="{Binding BestFitness, StringFormat=F4}" Style="{StaticResource MetricValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Pareto Front" Style="{StaticResource MetricLabel}" />
+                                    <TextBlock Text="{Binding ParetoFrontSize}" Style="{StaticResource MetricValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="3">
+                                    <TextBlock Text="Seq/sec" Style="{StaticResource MetricLabel}" />
+                                    <TextBlock Text="{Binding SequencesPerSecond, StringFormat=N0}" Style="{StaticResource MetricValue}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Threshold" Style="{StaticResource MetricLabel}" />
+                                    <TextBlock>
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource MetricValue}">
+                                                <Setter Property="Text" Value="—" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ThresholdReached}" Value="True">
+                                                        <Setter Property="Text" Value="REACHED" />
+                                                        <Setter Property="Foreground" Value="#44FF44" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Grid.Row="1" Text="{Binding StatusMessage}"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
+                               Margin="0,8,0,8" TextWrapping="Wrap" />
+
+                    <!-- Convergence Chart -->
+                    <oxy:PlotView Grid.Row="2" Model="{Binding ConvergencePlot}"
+                                  Background="Transparent" MinHeight="250">
+                        <oxy:PlotView.DefaultTrackerTemplate>
+                            <ControlTemplate>
+                                <oxy:TrackerControl Position="{Binding Position}"
+                                                    Background="#E0202530"
+                                                    BorderBrush="#FF5080C0"
+                                                    BorderThickness="1"
+                                                    LineStroke="#FF5080C0"
+                                                    LineExtents="{Binding PlotModel.PlotArea}">
+                                    <TextBlock Text="{Binding}" Foreground="#FFE0E4EC"
+                                               FontFamily="Consolas" FontSize="12"
+                                               Margin="8,5" />
+                                </oxy:TrackerControl>
+                            </ControlTemplate>
+                        </oxy:PlotView.DefaultTrackerTemplate>
+                    </oxy:PlotView>
+                </Grid>
+            </TabItem>
+
+            <!-- Results Tab -->
+            <TabItem Header="Results">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="200" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                        <TextBlock Text="PARETO-OPTIMAL CANDIDATES" Style="{StaticResource SectionHeader}"
+                                   VerticalAlignment="Center" />
+                    </DockPanel>
+
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding ParetoFrontItems}"
+                              SelectedItem="{Binding SelectedCandidate}"
+                              Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Rank}" Width="40" />
+                            <DataGridTextColumn Header="CAI" Binding="{Binding CaiDisplay}" Width="65" />
+                            <DataGridTextColumn Header="GC" Binding="{Binding GcDisplay}" Width="65" />
+                            <DataGridTextColumn Header="CpG" Binding="{Binding CpgDisplay}" Width="65" />
+                            <DataGridTextColumn Header="Uridine" Binding="{Binding UridineDisplay}" Width="75" />
+                            <DataGridTextColumn Header="Composite" Binding="{Binding CompositeDisplay}" Width="90" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock Grid.Row="1" Text="Run optimization to see results."
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="14"
+                               VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Visibility="{Binding HasResult, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                    <!-- Candidate Detail -->
+                    <Border Grid.Row="2" Style="{StaticResource CardBorder}" Margin="0,8,0,0"
+                            Visibility="{Binding SelectedCandidate, Converter={StaticResource NullToCollapsed}}">
+                        <TextBlock Text="{Binding SelectedCandidateDetail}"
+                                   FontFamily="Consolas" FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+
+                    <!-- Pareto Scatter -->
+                    <oxy:PlotView Grid.Row="3" Model="{Binding ParetoPlot}"
+                                  Background="Transparent" Margin="0,8,0,0"
+                                  Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
+                        <oxy:PlotView.DefaultTrackerTemplate>
+                            <ControlTemplate>
+                                <oxy:TrackerControl Position="{Binding Position}"
+                                                    Background="#E0202530"
+                                                    BorderBrush="#FF5080C0"
+                                                    BorderThickness="1"
+                                                    LineStroke="#FF5080C0"
+                                                    LineExtents="{Binding PlotModel.PlotArea}">
+                                    <TextBlock Text="{Binding}" Foreground="#FFE0E4EC"
+                                               FontFamily="Consolas" FontSize="12"
+                                               Margin="8,5" />
+                                </oxy:TrackerControl>
+                            </ControlTemplate>
+                        </oxy:PlotView.DefaultTrackerTemplate>
+                    </oxy:PlotView>
+                </Grid>
+            </TabItem>
+
+            <!-- Service Log Tab -->
+            <TabItem Header="Service Log">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                        <TextBlock Text="SERVICE DEBUG LOG" Style="{StaticResource SectionHeader}"
+                                   VerticalAlignment="Center" />
+                        <Button Content="Clear Log" DockPanel.Dock="Right"
+                                Command="{Binding ClearLogCommand}"
+                                HorizontalAlignment="Right" />
+                    </DockPanel>
+
+                    <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                        <TextBox Text="{Binding DebugLog, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 FontFamily="Consolas"
+                                 FontSize="11"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource TextSecondaryBrush}"
+                                 BorderThickness="0"
+                                 AcceptsReturn="True"
+                                 x:Name="DebugLogTextBox" />
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Science Tab -->
+            <TabItem Header="About This Pipeline">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel MaxWidth="800">
+                        <TextBlock Text="mRNA THERAPY DESIGN FOR CYSTIC FIBROSIS"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBlueBrush}" Margin="0,0,0,12" />
+
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}"
+                                   LineHeight="22" FontSize="13" Margin="0,0,0,16">
+                            This pipeline designs optimized mRNA sequences encoding the wildtype CFTR protein
+                            (1,480 amino acids). When delivered to lung epithelial cells via lipid nanoparticles,
+                            the mRNA would cause cells to produce functional CFTR chloride channels — bypassing
+                            whatever mutation the patient carries.
+                        </TextBlock>
+
+                        <TextBlock Text="ARCHITECTURE" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}">
+                                    GPU-Accelerated Python Service</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
+                                    Scoring is performed on your RTX 3090 GPU via PyTorch CUDA tensors.
+                                    The Python FastAPI service runs continuously, saving checkpoints to disk
+                                    every N generations. The WPF app polls the API for live updates — the UI
+                                    stays responsive at all times. Results persist across restarts.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="HOW IT WORKS" Style="{StaticResource SectionHeader}" Margin="0,0,0,8" />
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}">
+                                    1. Codon Optimization (NSGA-II Genetic Algorithm)</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
+                                    The genetic code is degenerate — most amino acids can be encoded by 2-6 different
+                                    codons. We search through ~10⁷⁰⁶ possible mRNA sequences (all encoding the same
+                                    protein) to find ones that maximize translation efficiency, stability, and immune
+                                    evasion simultaneously using the NSGA-II multi-objective optimizer.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}">
+                                    2. GPU Batch Scoring (PyTorch / CUDA)</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
+                                    Each candidate is scored on 7 objectives simultaneously on the GPU:
+                                    Codon Adaptation Index (CAI), GC content, CpG dinucleotide depletion,
+                                    uridine reduction, rare codon avoidance, repeat sequence avoidance,
+                                    and codon pair bias. All 500+ candidates are scored in parallel as tensor operations.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}">
+                                    3. Continuous Operation with Checkpointing</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0">
+                                    The optimizer runs indefinitely until a fitness threshold is reached or you
+                                    manually stop it. Checkpoints are saved to disk with timestamps every N generations,
+                                    so no progress is lost due to power outages. Previous runs can be loaded or resumed.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="SCIENTIFIC DISCLAIMER" Style="{StaticResource SectionHeader}"
+                                   Foreground="{StaticResource AccentRedBrush}" Margin="0,16,0,8" />
+                        <Border Style="{StaticResource CardBorder}">
+                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" LineHeight="20">
+                                This tool is a computational design aid for research and education.
+                                Optimized sequences have NOT been experimentally validated. Therapeutic
+                                application would require extensive wet-lab validation, animal studies,
+                                and clinical trials. This is NOT a substitute for professional drug development.
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

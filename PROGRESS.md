@@ -14,6 +14,7 @@ Researchers load protein structures, compare mutated variants, inspect structura
 | 3 | Comparison features, mutation region inspection | ✅ Complete |
 | 4 | Annotation system with SQLite persistence | ✅ Complete |
 | 5 | Export, binding pocket heuristic, polish | ✅ Complete |
+| 6 | mRNA Therapy Designer — codon optimization, NSGA-II GA, construct assembly | ✅ Complete |
 
 ---
 
@@ -93,14 +94,52 @@ Researchers load protein structures, compare mutated variants, inspect structura
 
 ---
 
+## Phase 6 — mRNA Therapy Designer ✅
+
+### Deliverables
+- [x] CFTR protein sequence data (UniProt P13569, 1480 amino acids, 5 domains)
+- [x] Complete codon table (64 codons, standard genetic code)
+- [x] Human codon usage frequencies (Kazusa DB, Homo sapiens)
+- [x] Relative adaptiveness and synonymous codon lookups
+- [x] 8 scoring functions: CAI, GC%, CpG depletion, uridine reduction, rare codon avoidance, repeat avoidance, codon pair bias, 5' folding energy
+- [x] Simplified RNA secondary structure prediction (Nussinov-style DP, O(n³))
+- [x] NSGA-II multi-objective genetic algorithm (non-dominated sorting, crowding distance, Pareto front)
+- [x] Population initialization (greedy optimal + frequency-weighted random)
+- [x] Crossover (uniform at codon boundaries) and mutation (synonymous codon swap)
+- [x] Convergence detection (stagnation limit)
+- [x] Parallel batch fitness evaluation (TPL)
+- [x] 5' and 3' UTR libraries (HBA1, HBB, AES-mtRNR1, TEV, synthetic)
+- [x] Nucleotide modification strategy (m¹Ψ, m5C, Cap1)
+- [x] Full mRNA construct assembly (Cap → 5'UTR → Kozak → CDS → Stop → 3'UTR → PolyA)
+- [x] FASTA export and Markdown report generation
+- [x] WPF "mRNA Therapy" tab with:
+  - Configuration panel (population, generations, crossover/mutation rates)
+  - Objective weight sliders (CAI, GC, CpG, uridine, rare codons, repeats)
+  - UTR selection, poly(A) length, modification toggles
+  - Real-time convergence chart (OxyPlot)
+  - Pareto front scatter plot
+  - Results table with candidate ranking
+  - Candidate detail view (score breakdown + construct preview)
+  - "About This Pipeline" science reference tab
+- [x] 33 new unit tests (codon table, CFTR sequence, scoring, folding, candidates, constructs, UTR library)
+
+---
+
 ## Test Summary
 
 | Category | Tests |
 |----------|-------|
 | PDB Parsing | 10 |
-| Structure Comparison | 6 |
+| Structure Comparison | 5 |
 | Annotation Persistence | 5 |
-| **Total** | **21** |
+| Codon Table | 9 |
+| CFTR Sequence | 4 |
+| Codon Scoring | 6 |
+| RNA Folding | 4 |
+| mRNA Candidates | 3 |
+| Construct Design | 2 |
+| UTR Library | 3 |
+| **Total** | **54** |
 
 All tests passing ✅
 
@@ -109,63 +148,55 @@ All tests passing ✅
 ## File Structure
 
 ```
-CftrMutationExplorer.sln
+CftrMutationExplorer.slnx
 ├── src/
 │   ├── CftrMutationExplorer.Core/
 │   │   ├── Models/
-│   │   │   ├── Atom.cs
-│   │   │   ├── Residue.cs
-│   │   │   ├── Chain.cs
-│   │   │   ├── ProteinStructure.cs
-│   │   │   ├── Annotation.cs
-│   │   │   ├── AnalysisSession.cs
-│   │   │   ├── StructureComparisonResult.cs
-│   │   │   └── BindingPocketCandidate.cs
+│   │   │   ├── Atom.cs, Residue.cs, Chain.cs, ProteinStructure.cs
+│   │   │   ├── Annotation.cs, AnalysisSession.cs
+│   │   │   ├── StructureComparisonResult.cs, BindingPocketCandidate.cs
+│   │   │   └── Mrna/
+│   │   │       ├── CodonTable.cs           # 64 codons + human usage frequencies
+│   │   │       ├── CftrSequence.cs         # CFTR protein (1480 aa) + domains + mutations
+│   │   │       ├── MrnaCandidate.cs        # Candidate solution + multi-objective scores
+│   │   │       ├── OptimizationConfig.cs   # GA parameters + objective weights
+│   │   │       ├── OptimizationResult.cs   # Result + generation history + progress
+│   │   │       ├── ConstructDesign.cs      # Full mRNA construct (cap/UTR/CDS/polyA)
+│   │   │       └── UtrLibrary.cs           # 5'/3' UTR sequence library
 │   │   └── Interfaces/
-│   │       ├── IPdbParser.cs
-│   │       ├── IStructureComparisonService.cs
-│   │       ├── IAnnotationRepository.cs
-│   │       ├── ISessionPersistenceService.cs
-│   │       ├── IReportExportService.cs
-│   │       └── IBindingPocketService.cs
+│   │       ├── IPdbParser.cs, IStructureComparisonService.cs
+│   │       ├── IAnnotationRepository.cs, ISessionPersistenceService.cs
+│   │       ├── IReportExportService.cs, IBindingPocketService.cs
+│   │       ├── ICodonScoringService.cs     # 8 scoring functions
+│   │       ├── IRnaFoldingService.cs       # RNA structure prediction
+│   │       └── IMrnaOptimizationService.cs # Pipeline orchestration
 │   ├── CftrMutationExplorer.Infrastructure/
-│   │   ├── Parsing/
-│   │   │   └── PdbParser.cs
-│   │   ├── Persistence/
-│   │   │   ├── DatabaseInitializer.cs
-│   │   │   ├── SqliteAnnotationRepository.cs
-│   │   │   └── SqliteSessionPersistenceService.cs
+│   │   ├── Parsing/PdbParser.cs
+│   │   ├── Persistence/DatabaseInitializer.cs, Sqlite*.cs
 │   │   └── Services/
-│   │       ├── StructureComparisonService.cs
-│   │       ├── ReportExportService.cs
-│   │       └── BindingPocketService.cs
+│   │       ├── StructureComparisonService.cs, ReportExportService.cs, BindingPocketService.cs
+│   │       └── Mrna/
+│   │           ├── CodonScoringService.cs       # CAI, GC%, CpG, uridine, etc.
+│   │           ├── RnaFoldingService.cs          # Nussinov-style DP folding
+│   │           ├── NsgaIIOptimizer.cs            # NSGA-II genetic algorithm
+│   │           └── MrnaOptimizationService.cs    # Pipeline orchestrator
 │   └── CftrMutationExplorer.App/
-│       ├── App.xaml / App.xaml.cs
-│       ├── MainWindow.xaml / MainWindow.xaml.cs
+│       ├── App.xaml.cs (DI registration)
+│       ├── MainWindow.xaml (+ mRNA Therapy tab)
 │       ├── ViewModels/
-│       │   ├── MainWindowViewModel.cs
-│       │   ├── StructureLoaderViewModel.cs
-│       │   ├── ViewportViewModel.cs
-│       │   ├── ResidueInspectorViewModel.cs
-│       │   ├── ComparisonSummaryViewModel.cs
-│       │   ├── MutationAnalysisViewModel.cs
-│       │   ├── AnnotationListViewModel.cs
-│       │   ├── ExportViewModel.cs
-│       │   └── BindingPocketViewModel.cs
+│       │   ├── MainWindowViewModel.cs + existing VMs
+│       │   └── MrnaDesignerViewModel.cs    # mRNA optimizer UI orchestration
 │       ├── Views/
-│       │   └── ProteinViewport.xaml / .cs
-│       ├── Converters/
-│       │   └── BooleanConverters.cs
-│       └── Themes/
-│           └── ScientificTheme.xaml
+│       │   ├── ProteinViewport.xaml/.cs
+│       │   └── MrnaDesignerView.xaml/.cs   # Config + progress + results UI
+│       ├── Converters/BooleanConverters.cs
+│       └── Themes/ScientificTheme.xaml
 ├── tests/
 │   └── CftrMutationExplorer.Tests/
-│       ├── PdbParserTests.cs
-│       ├── StructureComparisonTests.cs
-│       └── AnnotationRepositoryTests.cs
-├── data/
-│   ├── CFTR_Normal.pdb
-│   └── CFTR_F508del.pdb
+│       ├── PdbParserTests.cs, StructureComparisonTests.cs, AnnotationRepositoryTests.cs
+│       └── MrnaOptimizationTests.cs        # 33 tests for mRNA pipeline
+├── data/CFTR_Normal.pdb, CFTR_F508del.pdb
+├── GAMEPLAN_MRNA_THERAPY.md
 ├── README.md
 └── PROGRESS.md
 ```
