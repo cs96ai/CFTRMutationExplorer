@@ -1,5 +1,21 @@
 # mRNA Therapy Designer for Cystic Fibrosis — Game Plan
 
+## Current Implementation Status (as of 2026)
+
+The following has been implemented and differs from the original phase numbering below:
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| **Stage 1: Codon Optimizer** | ✅ | Python FastAPI service (`scripts/mrna_service`). NSGA-II, 8 scoring functions, checkpoint persistence. WPF tab "Stage 1: Codon Optimizer". |
+| **Stage 2: Phase 5 Rescoring** | ✅ | Second-stage rescoring with 12 metrics: RNA structure (ViennaRNACuda/ViennaRNA/Nussinov), GC windows, motif risk, codon diversity. Global folding capped at 600 nt; 3×400 nt windows for long sequences. Weight presets, diversity filter. |
+| **Python service** | ✅ | `uvicorn main:app --host 127.0.0.1 --port 8787`. REST + WebSocket. |
+| **WPF integration** | ✅ | MrnaApiClient talks to Python. Stage 1 + Stage 2 tabs. Phase 5 shows CDS length and Vienna folding windows in summary. |
+| **UTR/Modification/Construct** | ✅ | UTR libraries, modification strategy, full construct assembly in Stage 1. |
+| **GPU scoring** | ⚠️ | Optional `scoring_gpu.py`; Stage 1 uses CPU by default. |
+| **Phases 5–8 below** | 📋 | Roadmap. "Phase 5" in our code = second-stage rescoring; game plan Phase 5 = UTR design (partially done in Stage 1). |
+
+---
+
 ## Mission
 
 Build a computational pipeline that designs optimized mRNA sequences encoding functional
@@ -63,12 +79,12 @@ instructions regardless of what went wrong in the patient's genome.
 
 ### Key Decision: C# Engine + Python RNA Folding
 
-The core optimization (genetic algorithm, scoring) will be written in C# to integrate
-cleanly with the existing WPF/MVVM architecture. RNA secondary structure prediction
-requires ViennaRNA (a C library with Python bindings) and will be called via subprocess.
+**Current implementation**: The optimizer and Phase 5 rescoring run in Python
+(`scripts/mrna_service`). The WPF app calls the FastAPI service via HTTP/WebSocket.
+RNA folding uses ViennaRNACuda (RNAfold_simple.exe), ViennaRNA (pip), or Nussinov fallback.
 
-GPU acceleration (RTX 3090) will be used for batch fitness evaluation using ILGPU or
-TorchSharp for parallel scoring of hundreds of candidate sequences simultaneously.
+*Original plan*: Core optimization in C# with Python for RNA folding. The Python-first
+approach was chosen for easier integration with ViennaRNA and faster iteration.
 
 ---
 

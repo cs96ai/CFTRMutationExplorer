@@ -14,7 +14,7 @@ Researchers load protein structures, compare mutated variants, inspect structura
 | 3 | Comparison features, mutation region inspection | ✅ Complete |
 | 4 | Annotation system with SQLite persistence | ✅ Complete |
 | 5 | Export, binding pocket heuristic, polish | ✅ Complete |
-| 6 | mRNA Therapy Designer — codon optimization, NSGA-II GA, construct assembly | ✅ Complete |
+| 6 | mRNA Therapy Designer — Stage 1 (NSGA-II codon optimizer), Stage 2 (Phase 5 rescoring), Python FastAPI service | ✅ Complete |
 
 ---
 
@@ -96,32 +96,34 @@ Researchers load protein structures, compare mutated variants, inspect structura
 
 ## Phase 6 — mRNA Therapy Designer ✅
 
-### Deliverables
-- [x] CFTR protein sequence data (UniProt P13569, 1480 amino acids, 5 domains)
+### Stage 1: Codon Optimizer (Python FastAPI service)
+- [x] Python service at `scripts/mrna_service` (FastAPI, uvicorn, port 8787)
+- [x] CFTR protein sequence data (UniProt P13569, 1480 amino acids)
 - [x] Complete codon table (64 codons, standard genetic code)
 - [x] Human codon usage frequencies (Kazusa DB, Homo sapiens)
-- [x] Relative adaptiveness and synonymous codon lookups
-- [x] 8 scoring functions: CAI, GC%, CpG depletion, uridine reduction, rare codon avoidance, repeat avoidance, codon pair bias, 5' folding energy
-- [x] Simplified RNA secondary structure prediction (Nussinov-style DP, O(n³))
+- [x] 8 scoring functions: CAI, GC%, CpG depletion, uridine reduction, rare codon avoidance, repeat avoidance, codon pair bias
 - [x] NSGA-II multi-objective genetic algorithm (non-dominated sorting, crowding distance, Pareto front)
 - [x] Population initialization (greedy optimal + frequency-weighted random)
 - [x] Crossover (uniform at codon boundaries) and mutation (synonymous codon swap)
 - [x] Convergence detection (stagnation limit)
-- [x] Parallel batch fitness evaluation (TPL)
-- [x] 5' and 3' UTR libraries (HBA1, HBB, AES-mtRNR1, TEV, synthetic)
-- [x] Nucleotide modification strategy (m¹Ψ, m5C, Cap1)
-- [x] Full mRNA construct assembly (Cap → 5'UTR → Kozak → CDS → Stop → 3'UTR → PolyA)
+- [x] Checkpoint persistence, Stage 1 top 10 log (`stage1_top10_candidates.json`)
+- [x] 5' and 3' UTR libraries, nucleotide modification strategy, full construct assembly
 - [x] FASTA export and Markdown report generation
-- [x] WPF "mRNA Therapy" tab with:
-  - Configuration panel (population, generations, crossover/mutation rates)
-  - Objective weight sliders (CAI, GC, CpG, uridine, rare codons, repeats)
-  - UTR selection, poly(A) length, modification toggles
-  - Real-time convergence chart (OxyPlot)
-  - Pareto front scatter plot
-  - Results table with candidate ranking
-  - Candidate detail view (score breakdown + construct preview)
-  - "About This Pipeline" science reference tab
-- [x] 33 new unit tests (codon table, CFTR sequence, scoring, folding, candidates, constructs, UTR library)
+
+### Stage 2: Phase 5 Advanced Rescoring
+- [x] Phase 5 pipeline: 12 metrics (RNA structure, GC windows, motif risk, codon diversity)
+- [x] Folding backends: ViennaRNACuda (RNAfold_simple.exe) → ViennaRNA (pip) → Nussinov fallback
+- [x] Global folding capped at 600 nt; 3×400 nt windows for long sequences (avoids O(n³) blow-up)
+- [x] Saturation dampening, diversity filter (Hamming-distance), weight presets
+- [x] Phase 5 rescoring API (`/phase5/rescore`, `/phase5/progress`, `/phase5/results`)
+- [x] Phase 5 tests (`tests/test_phase5.py`)
+
+### WPF UI
+- [x] "mRNA Therapy Pipeline" tab with sub-tabs: Stage 1 (Codon Optimizer), Stage 2 (Phase 5 Rescoring)
+- [x] Stage 1: Configuration panel, progress, Pareto front, results table, candidate detail
+- [x] Stage 2: Preset/Top N/Run ID config, Run Rescore, Log tab, All Candidates/Diverse Top-K DataGrids, comparison chart
+- [x] Summary shows CDS length and Vienna folding windows (e.g. "4440 nt → 3×400 nt + 50+100 nt + 8×120 nt")
+- [x] MrnaApiClient for optimization and Phase 5 endpoints
 
 ---
 
@@ -176,8 +178,9 @@ CftrMutationExplorer.slnx
 │   │   └── Services/
 │   │       ├── StructureComparisonService.cs, ReportExportService.cs, BindingPocketService.cs
 │   │       └── Mrna/
-│   │           ├── CodonScoringService.cs       # CAI, GC%, CpG, uridine, etc.
-│   │           ├── RnaFoldingService.cs          # Nussinov-style DP folding
+│   │           ├── MrnaApiClient.cs              # HTTP client for Python mRNA service (Stage 1 + Phase 5)
+│   │           ├── CodonScoringService.cs        # CAI, GC%, CpG, uridine, etc.
+│   │           ├── RnaFoldingService.cs          # Nussinov-style DP (legacy; mRNA uses Python folding_backend)
 │   │           ├── NsgaIIOptimizer.cs            # NSGA-II genetic algorithm
 │   │           └── MrnaOptimizationService.cs    # Pipeline orchestrator
 │   └── CftrMutationExplorer.App/
@@ -185,10 +188,12 @@ CftrMutationExplorer.slnx
 │       ├── MainWindow.xaml (+ mRNA Therapy tab)
 │       ├── ViewModels/
 │       │   ├── MainWindowViewModel.cs + existing VMs
-│       │   └── MrnaDesignerViewModel.cs    # mRNA optimizer UI orchestration
+│       │   ├── MrnaDesignerViewModel.cs    # Stage 1 UI orchestration
+│       │   └── Phase5ViewModel.cs          # Stage 2 rescoring UI
 │       ├── Views/
 │       │   ├── ProteinViewport.xaml/.cs
-│       │   └── MrnaDesignerView.xaml/.cs   # Config + progress + results UI
+│       │   ├── MrnaDesignerView.xaml/.cs   # Stage 1: config + progress + results
+│       │   └── Phase5ResultsView.xaml/.cs # Stage 2: rescoring config + log + candidates
 │       ├── Converters/BooleanConverters.cs
 │       └── Themes/ScientificTheme.xaml
 ├── tests/
@@ -196,6 +201,16 @@ CftrMutationExplorer.slnx
 │       ├── PdbParserTests.cs, StructureComparisonTests.cs, AnnotationRepositoryTests.cs
 │       └── MrnaOptimizationTests.cs        # 33 tests for mRNA pipeline
 ├── data/CFTR_Normal.pdb, CFTR_F508del.pdb
+├── scripts/mrna_service/           # Python FastAPI service (Stage 1 + Phase 5)
+│   ├── main.py                    # REST API, WebSocket
+│   ├── optimizer.py               # NSGA-II codon optimizer
+│   ├── folding_backend.py         # ViennaRNACuda, ViennaRNA, Nussinov
+│   ├── phase5_scoring.py          # Phase 5 rescoring orchestrator
+│   ├── phase5_metrics.py          # Structure, GC, motif, codon metrics
+│   ├── phase5_config.py           # Presets, thresholds
+│   ├── phase5_report.py           # JSON report generation
+│   ├── motif_rules.py             # Homopolymer, repeat, forbidden motifs
+│   └── tests/test_phase5.py
 ├── GAMEPLAN_MRNA_THERAPY.md
 ├── README.md
 └── PROGRESS.md

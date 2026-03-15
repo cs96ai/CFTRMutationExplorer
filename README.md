@@ -6,6 +6,7 @@ The application is intended as a scientific desktop software demo emphasizing WP
 
 ## Key Features
 
+- **mRNA Therapy Pipeline** — Two-stage mRNA design: Stage 1 (NSGA-II codon optimizer via Python FastAPI service) and Stage 2 (Phase 5 rescoring with ViennaRNA folding, 12 metrics, diversity filter). Requires Python service at `scripts/mrna_service`.
 - **PDB File Loading** — Parse and display protein structures from standard .pdb files with async loading, progress reporting, and cancellation support
 - **3D Protein Visualization** — Interactive 3D viewport using HelixToolkit.Wpf with rotate/pan/zoom, multiple view modes (reference, mutant, overlay, mutation highlight), and color schemes (by chain, residue type, B-factor)
 - **Structure Comparison** — Side-by-side comparison of reference and mutant structures with residue-by-residue analysis, simplified RMSD calculation, and missing residue detection
@@ -58,6 +59,15 @@ dotnet restore
 dotnet build
 dotnet run --project src/CftrMutationExplorer.App
 ```
+
+### mRNA Therapy Pipeline (optional)
+The mRNA Therapy tab requires a Python FastAPI service. From the repo root:
+```bash
+cd scripts/mrna_service
+pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 8787
+```
+Then launch the WPF app and use the **mRNA Therapy Pipeline** tab. Stage 1 runs codon optimization; Stage 2 (Phase 5) rescores top candidates with ViennaRNA folding.
 
 ### Run Tests
 ```bash
