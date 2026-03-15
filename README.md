@@ -113,7 +113,7 @@ dotnet test
 
 ## Screenshots
 
-*Application screenshots to be added after first run.*
+![CFTR Mutation Explorer](CftrMutationExplorer.png)
 
 ## Test Coverage
 
