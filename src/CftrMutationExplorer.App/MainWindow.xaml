@@ -7,6 +7,8 @@
         xmlns:views="clr-namespace:CftrMutationExplorer.App.Views"
         mc:Ignorable="d"
         Title="CFTR Mutation Explorer"
+        ToolTipService.InitialShowDelay="200"
+        ToolTipService.BetweenShowDelay="100"
         Height="820" Width="1400"
         MinHeight="600" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
@@ -30,19 +32,46 @@
                     <TextBlock Text="CFTR Mutation Explorer"
                                FontSize="16" FontWeight="Bold"
                                Foreground="{StaticResource AccentBlueBrush}"
-                               VerticalAlignment="Center" Margin="0,0,24,0" />
+                               VerticalAlignment="Center" Margin="0,0,20,0" />
 
-                    <Button x:Name="LoadDemoButton" Content="Load Demo Data"
-                            Style="{StaticResource AccentButton}"
-                            Command="{Binding LoadDemoDataCommand}"
-                            ToolTip="Load sample CFTR normal and F508del structures"
-                            Margin="0,0,8,0" />
-
-                    <Button x:Name="RunComparisonButton" Content="Run Comparison"
-                            Command="{Binding RunComparisonCommand}"
-                            IsEnabled="{Binding IsComparisonAvailable}"
-                            ToolTip="Compare loaded reference and mutant structures"
-                            Margin="0,0,8,0" />
+                    <!-- Main tab buttons -->
+                    <Border Background="{StaticResource PrimaryLightBrush}" CornerRadius="4"
+                            Padding="2" Margin="0,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Structure Explorer" Padding="14,8" FontSize="13" FontWeight="SemiBold"
+                                    Command="{Binding SetSelectedTabCommand}" CommandParameter="0"
+                                    Margin="0" VerticalAlignment="Stretch">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="0">
+                                                <Setter Property="Background" Value="{StaticResource AccentBlueBrush}" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="mRNA Therapy Pipeline" Padding="14,8" FontSize="13" FontWeight="SemiBold"
+                                    Command="{Binding SetSelectedTabCommand}" CommandParameter="1"
+                                    Margin="0" VerticalAlignment="Stretch">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
+                                                <Setter Property="Background" Value="{StaticResource AccentBlueBrush}" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <TextBlock Text="{Binding StatusMessage}"
@@ -69,7 +98,21 @@
                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8">
                     <StackPanel>
-                        <TextBlock Text="STRUCTURES" Style="{StaticResource SectionHeader}" />
+                        <DockPanel Margin="0,0,0,4">
+                            <TextBlock Text="STRUCTURES" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                            <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                <ContentControl.ToolTip>
+                                    <ToolTip MaxWidth="340" Padding="10,8">
+                                        <StackPanel>
+                                            <TextBlock Text="Load PDB structures" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                Load a reference (normal) and mutant CFTR structure. Use Browse to pick PDB files. Demo data loads automatically on startup. Both must be loaded before comparison.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ContentControl.ToolTip>
+                            </ContentControl>
+                        </DockPanel>
 
                         <!-- Reference Structure -->
                         <Border Style="{StaticResource CardBorder}">
@@ -82,6 +125,7 @@
 
                                 <Button Content="Browse PDB File..."
                                         Command="{Binding BrowseAndLoadCommand}"
+                                        ToolTip="Open file dialog to select a PDB structure file. Loads the reference (normal) CFTR structure."
                                         Margin="0,0,0,8" />
 
                                 <ProgressBar Value="{Binding LoadProgress}"
@@ -115,6 +159,7 @@
 
                                 <Button Content="Browse PDB File..."
                                         Command="{Binding BrowseAndLoadCommand}"
+                                        ToolTip="Open file dialog to select a PDB structure file. Loads the mutant (e.g. F508del) CFTR structure."
                                         Margin="0,0,0,8" />
 
                                 <ProgressBar Value="{Binding LoadProgress}"
@@ -141,7 +186,21 @@
                         <Border Style="{StaticResource CardBorder}"
                                 Visibility="{Binding ComparisonSummary.HasResult, Converter={StaticResource BoolToVisibility}}">
                             <StackPanel>
-                                <TextBlock Text="QUICK STATS" Style="{StaticResource SectionHeader}" />
+                                <DockPanel Margin="0,0,0,4">
+                                    <TextBlock Text="QUICK STATS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                    <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                        <ContentControl.ToolTip>
+                                            <ToolTip MaxWidth="320" Padding="10,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="Quick comparison summary" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                        Residue and atom counts for each structure, plus simplified RMSD (root-mean-square deviation) between aligned structures.
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ToolTip>
+                                        </ContentControl.ToolTip>
+                                    </ContentControl>
+                                </DockPanel>
 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -181,6 +240,15 @@
                                 </Grid>
                             </StackPanel>
                         </Border>
+
+                        <!-- Run Comparison -->
+                        <Button x:Name="RunComparisonButton" Content="Run Comparison"
+                                Style="{StaticResource AccentButton}"
+                                Command="{Binding RunComparisonCommand}"
+                                IsEnabled="{Binding IsComparisonAvailable}"
+                                ToolTip="Compare loaded reference and mutant structures. Computes RMSD, residue differences, and altered positions. Requires both structures to be loaded."
+                                Margin="0,8,0,0"
+                                HorizontalAlignment="Stretch" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -188,533 +256,626 @@
             <GridSplitter x:Name="LeftSplitter" Grid.Column="1" Width="4" Background="{StaticResource BorderBrush}"
                           HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 
-            <!-- Center: Tab Content -->
-            <TabControl x:Name="MainTabControl" Grid.Column="2" SelectedIndex="{Binding SelectedTabIndex}"
+            <!-- Center: Two top-level sections (header moved to top bar) -->
+            <TabControl x:Name="MainTabControl" Grid.Column="2"
                         Background="{StaticResource PrimaryDarkBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
                         Padding="0"
+                        SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
                         SelectionChanged="MainTabControl_SelectionChanged">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter ContentSource="SelectedContent" />
+                        </Border>
+                    </ControlTemplate>
+                </TabControl.Template>
 
-                <!-- 3D Viewport Tab -->
-                <TabItem Header="3D Viewport">
-                    <views:ProteinViewport DataContext="{Binding Viewport}" />
-                </TabItem>
+                <!-- ============================================================ -->
+                <!-- SECTION 1: Structure Explorer                                -->
+                <!-- ============================================================ -->
+                <TabItem>
 
-                <!-- Overview Tab -->
-                <TabItem Header="Overview">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="CFTR Mutation Explorer" FontSize="22" FontWeight="Bold"
-                                       Foreground="{StaticResource AccentBlueBrush}"
-                                       Margin="0,0,0,8" />
-                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="0,0,0,16" FontSize="13" LineHeight="20">
-                                Explore how the ΔF508 mutation affects the CFTR protein structure.
-                                Load a reference (normal) and mutant protein structure, compare them,
-                                inspect the mutation region, and analyze structural differences.
-                            </TextBlock>
+                    <TabControl Background="{StaticResource PrimaryDarkBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                Padding="0">
 
-                            <TextBlock Text="GETTING STARTED" Style="{StaticResource SectionHeader}" Margin="0,8,0,8" />
-
-                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                        <TabItem Header="Overview">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                                 <StackPanel>
-                                    <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">1. Load Structures</TextBlock>
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
-                                        Use the left panel to load PDB files, or click "Load Demo Data" to use sample CFTR structures.
+                                    <TextBlock Text="CFTR Mutation Explorer" FontSize="22" FontWeight="Bold"
+                                               Foreground="{StaticResource AccentBlueBrush}"
+                                               Margin="0,0,0,8" />
+                                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}"
+                                               Margin="0,0,0,16" FontSize="13" LineHeight="20">
+                                        Explore how the ΔF508 mutation affects the CFTR protein structure.
+                                        Load a reference (normal) and mutant protein structure, compare them,
+                                        inspect the mutation region, and analyze structural differences.
                                     </TextBlock>
+
+                                    <DockPanel Margin="0,8,0,8">
+                                        <TextBlock Text="GETTING STARTED" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                            <ContentControl.ToolTip>
+                                                <ToolTip MaxWidth="340" Padding="10,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Overview" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                            This screen explains the workflow. Load structures in the left panel, compare them, analyze the mutation, and inspect residues in the right panel.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </ContentControl.ToolTip>
+                                        </ContentControl>
+                                    </DockPanel>
+
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">1. Load Structures</TextBlock>
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
+                                                Demo data loads automatically on startup. Use the left panel to load your own PDB files instead.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">2. Compare Structures</TextBlock>
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
+                                                Once both structures are loaded, comparison runs automatically. View results in the Comparison tab.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">3. Analyze Mutation</TextBlock>
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
+                                                Switch to the Mutation Analysis tab to inspect the F508 deletion region and its structural impact.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">4. Inspect Residues</TextBlock>
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
+                                                Use the right panel to search, filter, and inspect individual residues and their neighborhoods.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="3D Viewport">
+                            <views:ProteinViewport DataContext="{Binding Viewport}" />
+                        </TabItem>
+
+                        <TabItem Header="Comparison">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
+                                          DataContext="{Binding ComparisonSummary}">
                                 <StackPanel>
-                                    <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">2. Compare Structures</TextBlock>
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
-                                        Once both structures are loaded, comparison runs automatically. View results in the Comparison tab.
-                                    </TextBlock>
+                                    <TextBlock Text="Load both structures to see comparison results."
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="14" Margin="0,20,0,0"
+                                               Visibility="{Binding HasResult, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                                    <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
+                                        <DockPanel Margin="0,0,0,4">
+                                            <TextBlock Text="STRUCTURE COMPARISON" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                            <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                                <ContentControl.ToolTip>
+                                                    <ToolTip MaxWidth="360" Padding="10,8">
+                                                        <StackPanel>
+                                                            <TextBlock Text="Structure comparison results" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                                RMSD measures overall structural deviation. Residue delta shows count differences. Missing in mutant lists residues present in reference but absent in mutant (e.g. F508 deletion). The table lists residue-by-residue changes.
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </ToolTip>
+                                                </ContentControl.ToolTip>
+                                            </ContentControl>
+                                        </DockPanel>
+
+                                        <Border Style="{StaticResource CardBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Reference" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding ReferenceFileName}" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource AccentGreenBrush}" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="Mutant" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding MutantFileName}" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource AccentOrangeBrush}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource CardBorder}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                                    <TextBlock Text="RMSD" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding RmsdDisplay}" Style="{StaticResource MetricValue}"
+                                                               Foreground="{StaticResource AccentBlueBrush}" FontSize="15" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                                    <TextBlock Text="Residue Δ" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding ResidueDifference}" Style="{StaticResource MetricValue}" FontSize="15" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                                    <TextBlock Text="Missing (Mut)" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding MissingInMutantCount}" Style="{StaticResource MetricValue}"
+                                                               Foreground="{StaticResource AccentRedBrush}" FontSize="15" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="3">
+                                                    <TextBlock Text="Altered" Style="{StaticResource MetricLabel}" />
+                                                    <TextBlock Text="{Binding AlteredResidueCount}" Style="{StaticResource MetricValue}"
+                                                               Foreground="{StaticResource AccentOrangeBrush}" FontSize="15" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <TextBlock Text="MISSING IN MUTANT" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
+                                        <ItemsControl ItemsSource="{Binding MissingInMutant}" Margin="0,0,0,8">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{StaticResource SurfaceMediumBrush}"
+                                                            CornerRadius="3" Padding="8,4" Margin="0,0,0,2">
+                                                        <TextBlock Text="{Binding}" Foreground="{StaticResource AccentRedBrush}" FontSize="12" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="RESIDUE-BY-RESIDUE COMPARISON" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
+                                        <DataGrid ItemsSource="{Binding ResidueComparisons}" MaxHeight="300">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
+                                                <DataGridTextColumn Header="#" Binding="{Binding ResidueNumber}" Width="50" />
+                                                <DataGridTextColumn Header="Reference" Binding="{Binding ReferenceResidueName}" Width="80" />
+                                                <DataGridTextColumn Header="Mutant" Binding="{Binding MutantResidueName}" Width="80" />
+                                                <DataGridTextColumn Header="Centroid Δ (Å)" Binding="{Binding CentroidDistance, StringFormat=F2}" Width="100" />
+                                                <DataGridCheckBoxColumn Header="Altered" Binding="{Binding IsAltered, Mode=OneWay}" Width="60" IsReadOnly="True" />
+                                                <DataGridCheckBoxColumn Header="Missing" Binding="{Binding IsMissing, Mode=OneWay}" Width="60" IsReadOnly="True" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <ItemsControl ItemsSource="{Binding Warnings}" Margin="0,8,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Foreground="{StaticResource AccentOrangeBrush}" FontSize="11" Margin="0,2" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
                                 </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Mutation Analysis">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
+                                          DataContext="{Binding MutationAnalysis}">
                                 <StackPanel>
-                                    <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">3. Analyze Mutation</TextBlock>
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
-                                        Switch to the Mutation Analysis tab to inspect the F508 deletion region and its structural impact.
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,4">
-                                <StackPanel>
-                                    <TextBlock FontWeight="SemiBold" Margin="0,0,0,4">4. Inspect Residues</TextBlock>
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap">
-                                        Use the right panel to search, filter, and inspect individual residues and their neighborhoods.
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
+                                    <TextBlock Text="Load both structures to see mutation analysis."
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="14" Margin="0,20,0,0"
+                                               Visibility="{Binding HasAnalysis, Converter={StaticResource InverseBoolToVisibility}}" />
 
-                <!-- Comparison Tab -->
-                <TabItem Header="Comparison">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
-                                  DataContext="{Binding ComparisonSummary}">
-                        <StackPanel>
-                            <!-- Empty state -->
-                            <TextBlock Text="Load both structures to see comparison results."
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="14" Margin="0,20,0,0"
-                                       Visibility="{Binding HasResult, Converter={StaticResource InverseBoolToVisibility}}" />
+                                    <StackPanel Visibility="{Binding HasAnalysis, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="ΔF508 MUTATION ANALYSIS" Style="{StaticResource SectionHeader}" />
 
-                            <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="STRUCTURE COMPARISON" Style="{StaticResource SectionHeader}" />
+                                        <Border Style="{StaticResource CardBorder}">
+                                            <StackPanel>
+                                                <TextBlock Text="Mutation Summary" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                <TextBlock Text="{Binding MutationSummary}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource TextSecondaryBrush}" LineHeight="20" />
+                                            </StackPanel>
+                                        </Border>
 
-                                <!-- Files -->
-                                <Border Style="{StaticResource CardBorder}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Reference" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding ReferenceFileName}" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource AccentGreenBrush}" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1">
-                                            <TextBlock Text="Mutant" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding MutantFileName}" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource AccentOrangeBrush}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                                <!-- Metrics grid -->
-                                <Border Style="{StaticResource CardBorder}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="RMSD" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding RmsdDisplay}" Style="{StaticResource MetricValue}"
-                                                       Foreground="{StaticResource AccentBlueBrush}" FontSize="15" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                            <TextBlock Text="Residue Δ" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding ResidueDifference}" Style="{StaticResource MetricValue}" FontSize="15" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                                            <TextBlock Text="Missing (Mut)" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding MissingInMutantCount}" Style="{StaticResource MetricValue}"
-                                                       Foreground="{StaticResource AccentRedBrush}" FontSize="15" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="3">
-                                            <TextBlock Text="Altered" Style="{StaticResource MetricLabel}" />
-                                            <TextBlock Text="{Binding AlteredResidueCount}" Style="{StaticResource MetricValue}"
-                                                       Foreground="{StaticResource AccentOrangeBrush}" FontSize="15" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-
-                                <!-- Missing residues -->
-                                <TextBlock Text="MISSING IN MUTANT" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
-                                <ItemsControl ItemsSource="{Binding MissingInMutant}" Margin="0,0,0,8">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{StaticResource SurfaceMediumBrush}"
-                                                    CornerRadius="3" Padding="8,4" Margin="0,0,0,2">
-                                                <TextBlock Text="{Binding}" Foreground="{StaticResource AccentRedBrush}" FontSize="12" />
+                                            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Reference Residue" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,0,6" />
+                                                    <TextBlock Text="{Binding ReferenceResidueInfo}" TextWrapping="Wrap"
+                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                               FontFamily="Consolas" FontSize="12" />
+                                                </StackPanel>
                                             </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Mutant Residue" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource AccentOrangeBrush}" Margin="0,0,0,6" />
+                                                    <TextBlock Text="{Binding MutantResidueInfo}" TextWrapping="Wrap"
+                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                               FontFamily="Consolas" FontSize="12" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
 
-                                <!-- Residue comparison table -->
-                                <TextBlock Text="RESIDUE-BY-RESIDUE COMPARISON" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
-                                <DataGrid ItemsSource="{Binding ResidueComparisons}"
-                                          MaxHeight="300">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
-                                        <DataGridTextColumn Header="#" Binding="{Binding ResidueNumber}" Width="50" />
-                                        <DataGridTextColumn Header="Reference" Binding="{Binding ReferenceResidueName}" Width="80" />
-                                        <DataGridTextColumn Header="Mutant" Binding="{Binding MutantResidueName}" Width="80" />
-                                        <DataGridTextColumn Header="Centroid Δ (Å)" Binding="{Binding CentroidDistance, StringFormat=F2}" Width="100" />
-                                        <DataGridCheckBoxColumn Header="Altered" Binding="{Binding IsAltered, Mode=OneWay}" Width="60" IsReadOnly="True" />
-                                        <DataGridCheckBoxColumn Header="Missing" Binding="{Binding IsMissing, Mode=OneWay}" Width="60" IsReadOnly="True" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
+                                        <Border Style="{StaticResource CardBorder}">
+                                            <StackPanel>
+                                                <TextBlock Text="Folding Impact Assessment" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource AccentRedBrush}" Margin="0,0,0,6" />
+                                                <TextBlock Text="{Binding FoldingAssessment}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource TextSecondaryBrush}" LineHeight="20" />
+                                            </StackPanel>
+                                        </Border>
 
-                                <!-- Warnings -->
-                                <ItemsControl ItemsSource="{Binding Warnings}" Margin="0,8,0,0">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}" Foreground="{StaticResource AccentOrangeBrush}" FontSize="11" Margin="0,2" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
+                                        <Border Style="{StaticResource CardBorder}">
+                                            <StackPanel>
+                                                <TextBlock Text="Structural Impact Summary" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                                <TextBlock Text="{Binding StructuralImpactSummary}" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           FontFamily="Consolas" FontSize="12" />
+                                            </StackPanel>
+                                        </Border>
 
-                <!-- Mutation Analysis Tab -->
-                <TabItem Header="Mutation Analysis">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
-                                  DataContext="{Binding MutationAnalysis}">
-                        <StackPanel>
-                            <TextBlock Text="Load both structures to see mutation analysis."
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="14" Margin="0,20,0,0"
-                                       Visibility="{Binding HasAnalysis, Converter={StaticResource InverseBoolToVisibility}}" />
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                            <StackPanel Visibility="{Binding HasAnalysis, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="ΔF508 MUTATION ANALYSIS" Style="{StaticResource SectionHeader}" />
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="REFERENCE NEIGHBORS (10Å)" Style="{StaticResource SectionHeader}" />
+                                                <DataGrid ItemsSource="{Binding ReferenceNeighbors}" MaxHeight="250">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="Residue" Binding="{Binding Label}" Width="*" />
+                                                        <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
+                                                        <DataGridTextColumn Header="Dist" Binding="{Binding DistanceDisplay}" Width="60" />
+                                                        <DataGridTextColumn Header="Atoms" Binding="{Binding AtomCount}" Width="50" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </StackPanel>
 
-                                <!-- Mutation summary -->
-                                <Border Style="{StaticResource CardBorder}">
-                                    <StackPanel>
-                                        <TextBlock Text="Mutation Summary" FontWeight="SemiBold" Margin="0,0,0,6" />
-                                        <TextBlock Text="{Binding MutationSummary}" TextWrapping="Wrap"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" LineHeight="20" />
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="MUTANT NEIGHBORS (10Å)" Style="{StaticResource SectionHeader}" />
+                                                <DataGrid ItemsSource="{Binding MutantNeighbors}" MaxHeight="250">
+                                                    <DataGrid.Columns>
+                                                        <DataGridTextColumn Header="Residue" Binding="{Binding Label}" Width="*" />
+                                                        <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
+                                                        <DataGridTextColumn Header="Dist" Binding="{Binding DistanceDisplay}" Width="60" />
+                                                        <DataGridTextColumn Header="Atoms" Binding="{Binding AtomCount}" Width="50" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
-                                </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
 
-                                <!-- Side by side residue info -->
-                                <Grid Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                        <TabItem Header="Structure Details">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                                <StackPanel>
+                                    <DockPanel Margin="0,0,0,4">
+                                        <TextBlock Text="LOADED STRUCTURE DETAILS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                            <ContentControl.ToolTip>
+                                                <ToolTip MaxWidth="320" Padding="10,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Structure metadata" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                            File path, chain count, and summary for each loaded reference and mutant structure.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </ContentControl.ToolTip>
+                                        </ContentControl>
+                                    </DockPanel>
 
-                                    <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                                    <Border Style="{StaticResource CardBorder}"
+                                            Visibility="{Binding ReferenceLoader.HasStructure, Converter={StaticResource BoolToVisibility}}">
                                         <StackPanel>
-                                            <TextBlock Text="Reference Residue" FontWeight="SemiBold"
+                                            <TextBlock Text="{Binding ReferenceLoader.Label}" FontWeight="SemiBold"
                                                        Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,0,6" />
-                                            <TextBlock Text="{Binding ReferenceResidueInfo}" TextWrapping="Wrap"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                                       FontFamily="Consolas" FontSize="12" />
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Consolas" FontSize="12">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="File: {0}&#x0a;Chains: {1}&#x0a;Summary: {2}">
+                                                        <Binding Path="ReferenceLoader.FileName" />
+                                                        <Binding Path="ComparisonSummary.ReferenceChainCount" />
+                                                        <Binding Path="ReferenceLoader.StructureSummary" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+
+                                    <Border Style="{StaticResource CardBorder}"
+                                            Visibility="{Binding MutantLoader.HasStructure, Converter={StaticResource BoolToVisibility}}">
                                         <StackPanel>
-                                            <TextBlock Text="Mutant Residue" FontWeight="SemiBold"
+                                            <TextBlock Text="{Binding MutantLoader.Label}" FontWeight="SemiBold"
                                                        Foreground="{StaticResource AccentOrangeBrush}" Margin="0,0,0,6" />
-                                            <TextBlock Text="{Binding MutantResidueInfo}" TextWrapping="Wrap"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                                       FontFamily="Consolas" FontSize="12" />
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Consolas" FontSize="12">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="File: {0}&#x0a;Chains: {1}&#x0a;Summary: {2}">
+                                                        <Binding Path="MutantLoader.FileName" />
+                                                        <Binding Path="ComparisonSummary.MutantChainCount" />
+                                                        <Binding Path="MutantLoader.StructureSummary" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
                                         </StackPanel>
                                     </Border>
-                                </Grid>
 
-                                <!-- Folding assessment -->
-                                <Border Style="{StaticResource CardBorder}">
-                                    <StackPanel>
-                                        <TextBlock Text="Folding Impact Assessment" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource AccentRedBrush}" Margin="0,0,0,6" />
-                                        <TextBlock Text="{Binding FoldingAssessment}" TextWrapping="Wrap"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" LineHeight="20" />
-                                    </StackPanel>
-                                </Border>
+                                    <TextBlock Text="No structures loaded yet."
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="14" Margin="0,8,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReferenceLoader.HasStructure}" Value="False">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
 
-                                <!-- Structural impact -->
-                                <Border Style="{StaticResource CardBorder}">
-                                    <StackPanel>
-                                        <TextBlock Text="Structural Impact Summary" FontWeight="SemiBold" Margin="0,0,0,6" />
-                                        <TextBlock Text="{Binding StructuralImpactSummary}" TextWrapping="Wrap"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontFamily="Consolas" FontSize="12" />
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Neighbor tables -->
-                                <Grid Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="REFERENCE NEIGHBORS (10Å)" Style="{StaticResource SectionHeader}" />
-                                        <DataGrid ItemsSource="{Binding ReferenceNeighbors}" MaxHeight="250">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="Residue" Binding="{Binding Label}" Width="*" />
-                                                <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
-                                                <DataGridTextColumn Header="Dist" Binding="{Binding DistanceDisplay}" Width="60" />
-                                                <DataGridTextColumn Header="Atoms" Binding="{Binding AtomCount}" Width="50" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="MUTANT NEIGHBORS (10Å)" Style="{StaticResource SectionHeader}" />
-                                        <DataGrid ItemsSource="{Binding MutantNeighbors}" MaxHeight="250">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="Residue" Binding="{Binding Label}" Width="*" />
-                                                <DataGridTextColumn Header="Chain" Binding="{Binding ChainId}" Width="50" />
-                                                <DataGridTextColumn Header="Dist" Binding="{Binding DistanceDisplay}" Width="60" />
-                                                <DataGridTextColumn Header="Atoms" Binding="{Binding AtomCount}" Width="50" />
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Annotations Tab -->
-                <TabItem Header="Annotations">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
-                                  DataContext="{Binding AnnotationList}">
-                        <StackPanel>
-                            <TextBlock Text="ANNOTATIONS" Style="{StaticResource SectionHeader}" />
-
-                            <!-- Add new annotation -->
-                            <Border Style="{StaticResource CardBorder}">
+                        <TabItem Header="Annotations">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
+                                          DataContext="{Binding AnnotationList}">
                                 <StackPanel>
-                                    <TextBlock Text="New Annotation" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                    <DockPanel Margin="0,0,0,4">
+                                        <TextBlock Text="ANNOTATIONS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                            <ContentControl.ToolTip>
+                                                <ToolTip MaxWidth="340" Padding="10,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Annotations" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                            Add notes tied to specific residues or chains. Categories help organize. Use Add Annotation to save; Refresh to reload from disk.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </ContentControl.ToolTip>
+                                        </ContentControl>
+                                    </DockPanel>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="8" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource CardBorder}">
+                                        <StackPanel>
+                                            <TextBlock Text="New Annotation" FontWeight="SemiBold" Margin="0,0,0,8" />
 
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Title" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
-                                            <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="8" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
 
-                                            <TextBlock Text="Category" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
-                                            <ComboBox ItemsSource="{Binding AvailableCategories}"
-                                                      SelectedItem="{Binding NewCategory}" Margin="0,0,0,8" />
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Title" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
+                                                    <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                                    <TextBlock Text="Category" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
+                                                    <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                                              SelectedItem="{Binding NewCategory}" Margin="0,0,0,8" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="Target Residue #" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
+                                                    <TextBox Text="{Binding NewTargetResidueNumber, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                                    <TextBlock Text="Chain" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
+                                                    <TextBox Text="{Binding NewTargetChainId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <TextBlock Text="Note" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
+                                            <TextBox Text="{Binding NewNote, UpdateSourceTrigger=PropertyChanged}"
+                                                     AcceptsReturn="True" Height="60" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                                            <Button Content="Add Annotation" Style="{StaticResource AccentButton}"
+                                                    Command="{Binding AddAnnotationCommand}"
+                                                    ToolTip="Save the new annotation with title, category, target residue, and note."
+                                                    HorizontalAlignment="Left" />
                                         </StackPanel>
+                                    </Border>
 
-                                        <StackPanel Grid.Column="2">
-                                            <TextBlock Text="Target Residue #" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
-                                            <TextBox Text="{Binding NewTargetResidueNumber, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                    <TextBlock Text="SAVED ANNOTATIONS" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
+                                    <Button Content="Refresh" Command="{Binding LoadAnnotationsCommand}"
+                                            ToolTip="Reload annotations from disk."
+                                            HorizontalAlignment="Left" Margin="0,0,0,8" />
 
-                                            <TextBlock Text="Chain" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
-                                            <TextBox Text="{Binding NewTargetChainId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8" />
+                                    <DataGrid ItemsSource="{Binding Annotations}"
+                                              SelectedItem="{Binding SelectedAnnotation}"
+                                              MaxHeight="300">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" />
+                                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" />
+                                            <DataGridTextColumn Header="Residue" Binding="{Binding TargetResidueNumber}" Width="70" />
+                                            <DataGridTextColumn Header="Chain" Binding="{Binding TargetChainId}" Width="50" />
+                                            <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat=g}" Width="130" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,8,0,0"
+                                            Visibility="{Binding SelectedAnnotation, Converter={StaticResource NullToCollapsed}}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SelectedAnnotation.Title}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,4" />
+                                            <TextBlock Text="{Binding SelectedAnnotation.Note}" TextWrapping="Wrap"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Content="Delete" Command="{Binding DeleteAnnotationCommand}"
+                                                        ToolTip="Delete the selected annotation."
+                                                        Margin="0,0,8,0" />
+                                            </StackPanel>
                                         </StackPanel>
-                                    </Grid>
+                                    </Border>
 
-                                    <TextBlock Text="Note" Style="{StaticResource MetricLabel}" Margin="0,0,0,2" />
-                                    <TextBox Text="{Binding NewNote, UpdateSourceTrigger=PropertyChanged}"
-                                             AcceptsReturn="True" Height="60" TextWrapping="Wrap" Margin="0,0,0,8" />
-
-                                    <Button Content="Add Annotation" Style="{StaticResource AccentButton}"
-                                            Command="{Binding AddAnnotationCommand}" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="11" Margin="0,8,0,0" />
                                 </StackPanel>
-                            </Border>
+                            </ScrollViewer>
+                        </TabItem>
 
-                            <!-- Annotation list -->
-                            <TextBlock Text="SAVED ANNOTATIONS" Style="{StaticResource SectionHeader}" Margin="0,8,0,4" />
-
-                            <Button Content="Refresh" Command="{Binding LoadAnnotationsCommand}"
-                                    HorizontalAlignment="Left" Margin="0,0,0,8" />
-
-                            <DataGrid ItemsSource="{Binding Annotations}"
-                                      SelectedItem="{Binding SelectedAnnotation}"
-                                      MaxHeight="300">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" />
-                                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" />
-                                    <DataGridTextColumn Header="Residue" Binding="{Binding TargetResidueNumber}" Width="70" />
-                                    <DataGridTextColumn Header="Chain" Binding="{Binding TargetChainId}" Width="50" />
-                                    <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat=g}" Width="130" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-                            <!-- Selected annotation details -->
-                            <Border Style="{StaticResource CardBorder}" Margin="0,8,0,0"
-                                    Visibility="{Binding SelectedAnnotation, Converter={StaticResource NullToCollapsed}}">
+                        <TabItem Header="Candidate Pockets">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
+                                          DataContext="{Binding BindingPockets}">
                                 <StackPanel>
-                                    <TextBlock Text="{Binding SelectedAnnotation.Title}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,4" />
-                                    <TextBlock Text="{Binding SelectedAnnotation.Note}" TextWrapping="Wrap"
-                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="Delete" Command="{Binding DeleteAnnotationCommand}" Margin="0,0,8,0" />
+                                    <DockPanel Margin="0,0,0,4">
+                                        <TextBlock Text="BINDING POCKET CANDIDATES" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                            <ContentControl.ToolTip>
+                                                <ToolTip MaxWidth="360" Padding="10,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Binding pocket detection" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                            Heuristic screening that clusters binding-relevant residues. Not a validated drug docking algorithm. Radius and min residues control clustering sensitivity.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </ContentControl.ToolTip>
+                                        </ContentControl>
+                                    </DockPanel>
+                                    <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap">
+                                        Demo heuristic screening — identifies clusters of binding-relevant residues.
+                                        Not a validated drug docking algorithm.
+                                    </TextBlock>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Button Content="Detect Pockets" Style="{StaticResource AccentButton}"
+                                                Command="{Binding DetectPocketsCommand}" Margin="0,0,12,0" />
+                                        <TextBlock Text="Radius (Å):" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" FontSize="11" />
+                                        <TextBox Text="{Binding ClusterRadius}" Width="50" Margin="0,0,12,0" />
+                                        <TextBlock Text="Min residues:" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" FontSize="11" />
+                                        <TextBox Text="{Binding MinResidues}" Width="50" />
                                     </StackPanel>
-                                </StackPanel>
-                            </Border>
 
-                            <TextBlock Text="{Binding StatusText}"
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="11" Margin="0,8,0,0" />
-                        </StackPanel>
-                    </ScrollViewer>
+                                    <DataGrid ItemsSource="{Binding Pockets}"
+                                              SelectedItem="{Binding SelectedPocket}"
+                                              MaxHeight="250"
+                                              Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Pocket" Binding="{Binding Label}" Width="80" />
+                                            <DataGridTextColumn Header="Residues" Binding="{Binding ResidueCount}" Width="65" />
+                                            <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="80" />
+                                            <DataGridTextColumn Header="Volume" Binding="{Binding VolumeDisplay}" Width="100" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+
+                                    <Border Style="{StaticResource CardBorder}" Margin="0,8,0,0"
+                                            Visibility="{Binding SelectedPocket, Converter={StaticResource NullToCollapsed}}">
+                                        <TextBlock Text="{Binding SelectedPocketDetails}"
+                                                   TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Foreground="{StaticResource TextMutedBrush}"
+                                               FontSize="11" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Export">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
+                                          DataContext="{Binding Export}">
+                                <StackPanel>
+                                    <DockPanel Margin="0,0,0,4">
+                                        <TextBlock Text="EXPORT &amp; REPORTING" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                            <ContentControl.ToolTip>
+                                                <ToolTip MaxWidth="340" Padding="10,8">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Export options" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                            Export Markdown report (comparison stats, altered residues, annotations), annotations to CSV, or capture the 3D viewport as PNG.
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </ContentControl.ToolTip>
+                                        </ContentControl>
+                                    </DockPanel>
+
+                                    <Border Style="{StaticResource CardBorder}">
+                                        <StackPanel>
+                                            <TextBlock Text="Comparison Report" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                Export a Markdown report including structure stats, comparison metrics,
+                                                altered residues, and annotations.
+                                            </TextBlock>
+                                            <Button Content="Export Report (.md)"
+                                                    Command="{Binding ExportReportCommand}"
+                                                    IsEnabled="{Binding CanExport}"
+                                                    ToolTip="Export a Markdown report with structure stats, comparison metrics, altered residues, and annotations."
+                                                    HorizontalAlignment="Left" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource CardBorder}">
+                                        <StackPanel>
+                                            <TextBlock Text="Annotations" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                Export all saved annotations to CSV format for external analysis.
+                                            </TextBlock>
+                                            <Button Content="Export Annotations (.csv)"
+                                                    Command="{Binding ExportAnnotationsCommand}"
+                                                    ToolTip="Export all saved annotations to a CSV file for external analysis."
+                                                    HorizontalAlignment="Left" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource CardBorder}">
+                                        <StackPanel>
+                                            <TextBlock Text="Viewport Screenshot" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                Capture the current 3D viewport as a PNG image.
+                                            </TextBlock>
+                                            <Button Content="Export Screenshot (.png)"
+                                                    Command="{Binding ExportScreenshotCommand}"
+                                                    ToolTip="Capture the current 3D viewport as a PNG image."
+                                                    HorizontalAlignment="Left" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Foreground="{StaticResource AccentGreenBrush}"
+                                               FontSize="12" Margin="0,12,0,0" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
                 </TabItem>
 
-                <!-- Binding Pockets Tab -->
-                <TabItem Header="Candidate Pockets">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
-                                  DataContext="{Binding BindingPockets}">
-                        <StackPanel>
-                            <TextBlock Text="BINDING POCKET CANDIDATES" Style="{StaticResource SectionHeader}" />
-                            <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap">
-                                Demo heuristic screening — identifies clusters of binding-relevant residues.
-                                Not a validated drug docking algorithm.
-                            </TextBlock>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <Button Content="Detect Pockets" Style="{StaticResource AccentButton}"
-                                        Command="{Binding DetectPocketsCommand}" Margin="0,0,12,0" />
-
-                                <TextBlock Text="Radius (Å):" VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" FontSize="11" />
-                                <TextBox Text="{Binding ClusterRadius}" Width="50" Margin="0,0,12,0" />
-
-                                <TextBlock Text="Min residues:" VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,4,0" FontSize="11" />
-                                <TextBox Text="{Binding MinResidues}" Width="50" />
-                            </StackPanel>
-
-                            <DataGrid ItemsSource="{Binding Pockets}"
-                                      SelectedItem="{Binding SelectedPocket}"
-                                      MaxHeight="250"
-                                      Visibility="{Binding HasResults, Converter={StaticResource BoolToVisibility}}">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Pocket" Binding="{Binding Label}" Width="80" />
-                                    <DataGridTextColumn Header="Residues" Binding="{Binding ResidueCount}" Width="65" />
-                                    <DataGridTextColumn Header="Confidence" Binding="{Binding Confidence}" Width="80" />
-                                    <DataGridTextColumn Header="Volume" Binding="{Binding VolumeDisplay}" Width="100" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-
-                            <Border Style="{StaticResource CardBorder}" Margin="0,8,0,0"
-                                    Visibility="{Binding SelectedPocket, Converter={StaticResource NullToCollapsed}}">
-                                <TextBlock Text="{Binding SelectedPocketDetails}"
-                                           TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"
-                                           Foreground="{StaticResource TextSecondaryBrush}" />
-                            </Border>
-
-                            <TextBlock Text="{Binding StatusText}"
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="11" Margin="0,8,0,0" />
-                        </StackPanel>
-                    </ScrollViewer>
+                <!-- ============================================================ -->
+                <!-- SECTION 2: mRNA Therapy Pipeline                             -->
+                <!-- ============================================================ -->
+                <TabItem>
+                    <TabControl Background="{StaticResource PrimaryDarkBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                Padding="0">
+                        <TabItem Header="Stage 1: Codon Optimizer">
+                            <views:MrnaDesignerView DataContext="{Binding MrnaDesigner}" />
+                        </TabItem>
+                        <TabItem Header="Stage 2: Advanced Rescoring">
+                            <views:Phase5ResultsView DataContext="{Binding Phase5}" />
+                        </TabItem>
+                    </TabControl>
                 </TabItem>
 
-                <!-- Export Tab -->
-                <TabItem Header="Export">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16"
-                                  DataContext="{Binding Export}">
-                        <StackPanel>
-                            <TextBlock Text="EXPORT &amp; REPORTING" Style="{StaticResource SectionHeader}" />
-
-                            <Border Style="{StaticResource CardBorder}">
-                                <StackPanel>
-                                    <TextBlock Text="Comparison Report" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
-                                        Export a Markdown report including structure stats, comparison metrics,
-                                        altered residues, and annotations.
-                                    </TextBlock>
-                                    <Button Content="Export Report (.md)"
-                                            Command="{Binding ExportReportCommand}"
-                                            IsEnabled="{Binding CanExport}"
-                                            HorizontalAlignment="Left" />
-                                </StackPanel>
-                            </Border>
-
-                            <Border Style="{StaticResource CardBorder}">
-                                <StackPanel>
-                                    <TextBlock Text="Annotations" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
-                                        Export all saved annotations to CSV format for external analysis.
-                                    </TextBlock>
-                                    <Button Content="Export Annotations (.csv)"
-                                            Command="{Binding ExportAnnotationsCommand}"
-                                            HorizontalAlignment="Left" />
-                                </StackPanel>
-                            </Border>
-
-                            <Border Style="{StaticResource CardBorder}">
-                                <StackPanel>
-                                    <TextBlock Text="Viewport Screenshot" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8">
-                                        Capture the current 3D viewport as a PNG image.
-                                    </TextBlock>
-                                    <Button Content="Export Screenshot (.png)"
-                                            Command="{Binding ExportScreenshotCommand}"
-                                            HorizontalAlignment="Left" />
-                                </StackPanel>
-                            </Border>
-
-                            <TextBlock Text="{Binding StatusText}"
-                                       Foreground="{StaticResource AccentGreenBrush}"
-                                       FontSize="12" Margin="0,12,0,0" />
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- mRNA Therapy Designer Tab -->
-                <TabItem Header="mRNA Therapy">
-                    <views:MrnaDesignerView DataContext="{Binding MrnaDesigner}" />
-                </TabItem>
-
-                <!-- Structure Details Tab -->
-                <TabItem Header="Structure Details">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="LOADED STRUCTURE DETAILS" Style="{StaticResource SectionHeader}" />
-
-                            <!-- Reference details -->
-                            <Border Style="{StaticResource CardBorder}"
-                                    Visibility="{Binding ReferenceLoader.HasStructure, Converter={StaticResource BoolToVisibility}}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding ReferenceLoader.Label}" FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,0,6" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Consolas" FontSize="12">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="File: {0}&#x0a;Chains: {1}&#x0a;Summary: {2}">
-                                                <Binding Path="ReferenceLoader.FileName" />
-                                                <Binding Path="ComparisonSummary.ReferenceChainCount" />
-                                                <Binding Path="ReferenceLoader.StructureSummary" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Mutant details -->
-                            <Border Style="{StaticResource CardBorder}"
-                                    Visibility="{Binding MutantLoader.HasStructure, Converter={StaticResource BoolToVisibility}}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding MutantLoader.Label}" FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentOrangeBrush}" Margin="0,0,0,6" />
-                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontFamily="Consolas" FontSize="12">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="File: {0}&#x0a;Chains: {1}&#x0a;Summary: {2}">
-                                                <Binding Path="MutantLoader.FileName" />
-                                                <Binding Path="ComparisonSummary.MutantChainCount" />
-                                                <Binding Path="MutantLoader.StructureSummary" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-
-                            <TextBlock Text="No structures loaded yet."
-                                       Foreground="{StaticResource TextMutedBrush}"
-                                       FontSize="14" Margin="0,8,0,0">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ReferenceLoader.HasStructure}" Value="False">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
             </TabControl>
 
             <GridSplitter x:Name="RightSplitter" Grid.Column="3" Width="4" Background="{StaticResource BorderBrush}"
@@ -733,10 +894,23 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="12,8,12,0">
-                        <TextBlock Text="RESIDUE INSPECTOR" Style="{StaticResource SectionHeader}" />
+                        <DockPanel Margin="0,0,0,4">
+                            <TextBlock Text="RESIDUE INSPECTOR" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                            <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                <ContentControl.ToolTip>
+                                    <ToolTip MaxWidth="340" Padding="10,8">
+                                        <StackPanel>
+                                            <TextBlock Text="Residue inspector" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                            <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                Search and filter residues by number or name. Filter by chain. Select a residue to see details below. Go to 508 jumps to the F508 mutation site.
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ContentControl.ToolTip>
+                            </ContentControl>
+                        </DockPanel>
                     </StackPanel>
 
-                    <!-- Search and filter -->
                     <StackPanel Grid.Row="1" Margin="12,4,12,4">
                         <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                  Tag="Search residue # or name..."
@@ -747,11 +921,11 @@
                                       DockPanel.Dock="Left" Width="120" Margin="0,0,4,0" />
                             <Button Content="Go to 508"
                                     Command="{Binding JumpToResidue508Command}"
+                                    ToolTip="Jump to residue 508 (F508 deletion site) in the structure and select it."
                                     DockPanel.Dock="Right" />
                         </DockPanel>
                     </StackPanel>
 
-                    <!-- Residue list -->
                     <DataGrid Grid.Row="2" ItemsSource="{Binding FilteredResidues}"
                               SelectedItem="{Binding SelectedResidue}"
                               Margin="12,4,12,4">
@@ -767,10 +941,23 @@
                     <GridSplitter Grid.Row="3" Height="4" Background="{StaticResource BorderBrush}"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 
-                    <!-- Selected residue details -->
                     <Border Grid.Row="4" Margin="12,4,12,8">
                         <StackPanel>
-                            <TextBlock Text="RESIDUE DETAILS" Style="{StaticResource SectionHeader}" />
+                            <DockPanel Margin="0,0,0,4">
+                                <TextBlock Text="RESIDUE DETAILS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                                <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                                    <ContentControl.ToolTip>
+                                        <ToolTip MaxWidth="300" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Residue details" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                                    Select a residue in the table above to see its full details here.
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </ContentControl.ToolTip>
+                                </ContentControl>
+                            </DockPanel>
                             <TextBlock Text="{Binding SelectedResidueDetails}"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        FontFamily="Consolas" FontSize="11"
@@ -793,7 +980,7 @@
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="{StaticResource TextMutedBrush}"
                            FontSize="11" VerticalAlignment="Center" />
-                <TextBlock Text="CFTR Mutation Explorer v1.0 — Demo Application"
+                <TextBlock Text="CFTR Mutation Explorer v2.0"
                            Foreground="{StaticResource TextMutedBrush}"
                            FontSize="11" VerticalAlignment="Center"
                            HorizontalAlignment="Right" DockPanel.Dock="Right" />

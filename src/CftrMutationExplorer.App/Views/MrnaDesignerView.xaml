@@ -17,7 +17,21 @@
                 <StackPanel>
 
                     <!-- Service Status -->
-                    <TextBlock Text="mRNA THERAPY DESIGNER" Style="{StaticResource SectionHeader}" />
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="mRNA THERAPY DESIGNER" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="360" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Stage 1: Codon Optimizer" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            GPU-accelerated NSGA-II genetic algorithm. Start the Python service first, load CFTR sequence, set parameters, then run optimization. Results feed into Stage 2 (Phase 5 rescoring).
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
+                    </DockPanel>
                     <TextBlock Text="GPU-accelerated mRNA optimization via Python service"
                                Foreground="{StaticResource TextMutedBrush}" FontSize="11"
                                TextWrapping="Wrap" Margin="0,0,0,4" />
@@ -46,13 +60,16 @@
                                 <Button Content="▶ Start" Style="{StaticResource AccentButton}"
                                         Command="{Binding StartServiceCommand}"
                                         IsEnabled="{Binding IsServiceConnected, Converter={StaticResource InverseBool}}"
+                                        ToolTip="Start the Python optimization service. Required before running optimization."
                                         Width="80" DockPanel.Dock="Left" Margin="0,0,4,0" />
                                 <Button Content="■ Stop"
                                         Command="{Binding StopServiceCommand}"
                                         IsEnabled="{Binding IsServiceConnected}"
+                                        ToolTip="Stop the Python optimization service."
                                         Width="70" DockPanel.Dock="Left" Margin="0,0,4,0" />
                                 <Button Content="↻ Restart"
                                         Command="{Binding RestartServiceCommand}"
+                                        ToolTip="Restart the Python optimization service."
                                         Width="80" DockPanel.Dock="Left" />
                             </DockPanel>
                         </StackPanel>
@@ -62,6 +79,7 @@
                     <Button Content="Load CFTR Sequence" Style="{StaticResource AccentButton}"
                             Command="{Binding LoadCftrSequenceCommand}"
                             IsEnabled="{Binding IsOptimizing, Converter={StaticResource InverseBool}}"
+                            ToolTip="Load the wildtype CFTR coding sequence (1,480 amino acids) from the API. Required before starting optimization."
                             Margin="0,0,0,4" />
 
                     <TextBlock Text="{Binding ProteinSummary}"
@@ -70,7 +88,21 @@
                                Visibility="{Binding IsSequenceLoaded, Converter={StaticResource BoolToVisibility}}" />
 
                     <!-- GA Parameters -->
-                    <TextBlock Text="OPTIMIZATION PARAMETERS" Style="{StaticResource SectionHeader}" />
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="OPTIMIZATION PARAMETERS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="360" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="NSGA-II parameters" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            Population size, crossover rate, mutation rate. Fitness threshold stops when reached. Checkpoint every N generations saves progress to disk.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
+                    </DockPanel>
 
                     <Border Style="{StaticResource CardBorder}">
                         <StackPanel>
@@ -105,7 +137,21 @@
                     </Border>
 
                     <!-- Objective Weights -->
-                    <TextBlock Text="OBJECTIVE WEIGHTS" Style="{StaticResource SectionHeader}" />
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="OBJECTIVE WEIGHTS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="360" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Multi-objective weights" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            Sliders for CAI (translation), GC content, CpG depletion, uridine reduction, rare codon avoidance, repeat avoidance, codon pair bias. Higher weight = more priority for that objective.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
+                    </DockPanel>
                     <Border Style="{StaticResource CardBorder}">
                         <StackPanel>
                             <DockPanel Margin="0,0,0,4">
@@ -166,10 +212,13 @@
                                 Command="{Binding StartOptimizationCommand}"
                                 IsEnabled="{Binding IsSequenceLoaded}"
                                 Visibility="{Binding IsOptimizing, Converter={StaticResource InverseBoolToVisibility}}"
+                                ToolTip="Start the genetic algorithm. Runs until fitness threshold or manual stop. Checkpoints saved periodically."
                                 Margin="0,0,8,0" />
                         <Button Content="■ Stop" Style="{StaticResource AccentButton}"
                                 Command="{Binding StopOptimizationCommand}"
-                                Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVisibility}}" />
+                                Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVisibility}}"
+                                ToolTip="Stop the optimization. Progress is checkpointed."
+                                />
                     </StackPanel>
 
                     <!-- Live Stats -->
@@ -197,10 +246,25 @@
                     </Border>
 
                     <!-- Previous Runs -->
-                    <TextBlock Text="PREVIOUS RUNS" Style="{StaticResource SectionHeader}" Margin="0,12,0,4" />
+                    <DockPanel Margin="0,12,0,4">
+                        <TextBlock Text="PREVIOUS RUNS" Style="{StaticResource SectionHeader}" VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="340" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Previous runs" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            Checkpoints saved from past optimizations. Load to inspect results; Resume to continue from a checkpoint.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
+                    </DockPanel>
                     <Border Style="{StaticResource CardBorder}">
                         <StackPanel>
                             <Button Content="Refresh" Command="{Binding LoadPreviousRunsCommand}"
+                                    ToolTip="Reload the list of previous runs from disk."
                                     HorizontalAlignment="Left" Margin="0,0,0,6" />
                             <ListBox ItemsSource="{Binding PreviousRuns}"
                                      SelectedItem="{Binding SelectedPreviousRun}"
@@ -214,9 +278,12 @@
                                 </ListBox.ItemTemplate>
                             </ListBox>
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                <Button Content="Load" Command="{Binding LoadSelectedRunCommand}" Margin="0,0,6,0" />
+                                <Button Content="Load" Command="{Binding LoadSelectedRunCommand}"
+                                        ToolTip="Load the selected checkpoint into the results view."
+                                        Margin="0,0,6,0" />
                                 <Button Content="Resume" Command="{Binding ResumeSelectedRunCommand}"
-                                        IsEnabled="{Binding IsOptimizing, Converter={StaticResource InverseBool}}" />
+                                        IsEnabled="{Binding IsOptimizing, Converter={StaticResource InverseBool}}"
+                                        ToolTip="Continue optimization from the selected checkpoint." />
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -324,6 +391,18 @@
                     <DockPanel Grid.Row="0" Margin="0,0,0,8">
                         <TextBlock Text="PARETO-OPTIMAL CANDIDATES" Style="{StaticResource SectionHeader}"
                                    VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="360" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Pareto front" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            Non-dominated solutions from NSGA-II. Each row encodes the same protein with different codons. Select one to see details; use Stage 2 for Phase 5 rescoring.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
                     </DockPanel>
 
                     <DataGrid Grid.Row="1" ItemsSource="{Binding ParetoFrontItems}"
@@ -386,8 +465,21 @@
                     <DockPanel Grid.Row="0" Margin="0,0,0,8">
                         <TextBlock Text="SERVICE DEBUG LOG" Style="{StaticResource SectionHeader}"
                                    VerticalAlignment="Center" />
+                        <ContentControl Style="{StaticResource InfoIcon}" DockPanel.Dock="Right" Margin="0,0,8,0">
+                            <ContentControl.ToolTip>
+                                <ToolTip MaxWidth="320" Padding="10,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Service log" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                            Live output from the Python optimization service. Useful for debugging.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ToolTip>
+                            </ContentControl.ToolTip>
+                        </ContentControl>
                         <Button Content="Clear Log" DockPanel.Dock="Right"
                                 Command="{Binding ClearLogCommand}"
+                                ToolTip="Clear the debug log display."
                                 HorizontalAlignment="Right" />
                     </DockPanel>
 

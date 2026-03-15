@@ -21,6 +21,9 @@ from pathlib import Path
 
 from optimizer import run_optimization, state, set_log_fn, set_status_fn
 from persistence import list_runs, load_checkpoint
+from phase5_config import list_presets, get_preset, get_default_config
+from phase5_scoring import Phase5Scorer
+from phase5_report import generate_report, generate_text_summary
 
 app = FastAPI(title="CFTR mRNA Therapy Optimizer", version="1.0.0")
 
@@ -94,6 +97,14 @@ def _log_startup():
         add_log("ERROR", "PyTorch not installed")
     except Exception as e:
         add_log("ERROR", f"GPU detection error: {e}")
+
+    # Log RNA folding backend (ViennaRNA preferred for accuracy)
+    try:
+        from folding_backend import get_best_backend
+        backend = get_best_backend()
+        add_log("INFO", f"RNA folding backend: {backend.name}" + (" (accurate)" if not backend.is_approximate else " (fallback, approximate)"))
+    except Exception as e:
+        add_log("WARN", f"RNA folding backend check failed: {e}")
 
 
 _log_startup()
@@ -315,6 +326,181 @@ def resume_run(run_id: str, req: OptimizeRequest):
     )
     _optimizer_thread.start()
     return {"message": f"Resumed run {run_id}", "checkpoint": checkpoint_file}
+
+
+# -----------------------------------------------------------------------
+# Phase 5 rescoring endpoints
+# -----------------------------------------------------------------------
+
+_phase5_last_result: Optional[dict] = None
+_phase5_lock = threading.Lock()
+
+_phase5_progress: dict = {
+    "running": False,
+    "done": 0,
+    "total": 0,
+    "current_id": "",
+    "error": None,
+    "log": [],  # Phase 5 rescoring log entries (timestamped)
+}
+_phase5_progress_lock = threading.Lock()
+
+
+class Phase5RescoreRequest(BaseModel):
+    run_id: Optional[str] = None
+    top_n: int = 50
+    preset: str = "phase5_balanced"
+
+
+def _phase5_log_entry(msg: str):
+    """Append a timestamped log entry to Phase 5 progress."""
+    from datetime import datetime
+    entry = f"[{datetime.now().strftime('%H:%M:%S')}] {msg}"
+    with _phase5_progress_lock:
+        _phase5_progress.setdefault("log", []).append(entry)
+
+
+def _run_phase5_rescore(top_candidates: list[dict], preset: str, top_n: int):
+    """Background thread: run Phase 5 rescoring and update progress."""
+    global _phase5_last_result, _phase5_progress
+
+    def on_progress(done: int, total: int, current_id: str):
+        with _phase5_progress_lock:
+            _phase5_progress["done"] = done
+            _phase5_progress["total"] = total
+            _phase5_progress["current_id"] = current_id
+
+    def on_log(msg: str):
+        _phase5_log_entry(msg)
+
+    try:
+        with _phase5_progress_lock:
+            _phase5_progress["running"] = True
+            _phase5_progress["done"] = 0
+            _phase5_progress["total"] = len(top_candidates)
+            _phase5_progress["current_id"] = ""
+            _phase5_progress["error"] = None
+            _phase5_progress["log"] = []
+
+        _phase5_log_entry(f"Starting Phase 5 rescoring: {len(top_candidates)} candidates, preset '{preset}'")
+        seq_len = len(top_candidates[0].get("coding_sequence", "")) if top_candidates else 0
+        if seq_len > 0:
+            from phase5_metrics import MAX_GLOBAL_FOLD_LENGTH
+            if seq_len <= MAX_GLOBAL_FOLD_LENGTH:
+                fold_desc = f"full {seq_len} nt"
+            else:
+                fold_desc = "3×400 nt + 50+100 nt + 8×120 nt"
+            _phase5_log_entry(f"CDS: {seq_len} nt → Vienna folds: {fold_desc}")
+
+        config = get_default_config()
+        config.top_n = top_n
+        _phase5_log_entry(f"Config: top_n={top_n}, diversity_top_k={config.diversity_top_k}, diversity_threshold={config.diversity_threshold}")
+        scorer = Phase5Scorer(config=config, preset=preset)
+        _phase5_log_entry(f"Folding backend: {scorer.backend.name} ({'accurate' if not scorer.backend.is_approximate else 'approximate'})")
+
+        import time
+        t0 = time.perf_counter()
+        result = scorer.rescore_candidates(
+            top_candidates,
+            progress_callback=on_progress,
+            log_callback=on_log,
+        )
+        elapsed = time.perf_counter() - t0
+        _phase5_log_entry(f"Rescoring complete in {elapsed:.1f}s ({len(result.candidates_all)} candidates)")
+        _phase5_log_entry(f"Throughput: {len(result.candidates_all) / elapsed:.1f} candidates/sec")
+        _phase5_log_entry(f"Top candidate: {result.summary.get('top_candidate_id', 'N/A')}")
+        _phase5_log_entry(f"Diverse top-K: {len(result.candidates_diverse_topk)} candidates")
+
+        report = generate_report(result)
+
+        with _phase5_lock:
+            _phase5_last_result = report
+
+        add_log("INFO", f"Phase 5 rescoring complete. Top candidate: {report['summary'].get('top_candidate_id', 'N/A')}")
+    except Exception as e:
+        add_log("ERROR", f"Phase 5 rescoring failed: {e}")
+        import traceback as tb
+        add_log("ERROR", tb.format_exc())
+        with _phase5_progress_lock:
+            _phase5_progress["error"] = str(e)
+    finally:
+        with _phase5_progress_lock:
+            _phase5_progress["running"] = False
+            _phase5_progress["done"] = _phase5_progress["total"]
+
+
+@app.post("/phase5/rescore")
+def rescore_phase5(req: Phase5RescoreRequest):
+    """Start Phase 5 rescoring in background. Returns immediately. Poll /phase5/progress for status."""
+    global _phase5_progress
+
+    run_id = req.run_id
+    candidates: list[dict] = []
+
+    if run_id:
+        results_path = Path(RESULTS_DIR)
+        for pattern in [f"optimization_{run_id}_FINAL.json", f"optimization_{run_id}_gen*.json"]:
+            files = sorted(results_path.glob(pattern), reverse=True)
+            if files:
+                data = load_checkpoint(str(files[0]))
+                candidates = data.get("pareto_candidates", [])
+                break
+        if not candidates:
+            raise HTTPException(404, f"No candidates found for run {run_id}")
+    else:
+        with state.lock:
+            candidates = list(state.pareto_front) if state.pareto_front else []
+        if not candidates:
+            raise HTTPException(400, "No candidates available. Run optimization first.")
+
+    candidates_with_seq = [c for c in candidates if c.get("coding_sequence")]
+    if not candidates_with_seq:
+        raise HTTPException(
+            400,
+            "Candidates lack coding sequences. Re-run optimization to generate them.",
+        )
+
+    top_candidates = candidates_with_seq[: req.top_n]
+
+    with _phase5_progress_lock:
+        if _phase5_progress["running"]:
+            raise HTTPException(409, "Phase 5 rescoring already in progress.")
+
+    add_log("INFO", f"Phase 5 rescoring {len(top_candidates)} candidates with preset '{req.preset}' (background)")
+
+    thread = threading.Thread(
+        target=_run_phase5_rescore,
+        args=(top_candidates, req.preset, req.top_n),
+        daemon=True,
+    )
+    thread.start()
+
+    return {"status": "started", "total": len(top_candidates)}
+
+
+@app.get("/phase5/progress")
+def get_phase5_progress():
+    """Return current Phase 5 rescoring progress. Poll while running."""
+    with _phase5_progress_lock:
+        return dict(_phase5_progress)
+
+
+@app.get("/phase5/results")
+def get_phase5_results():
+    """Return the latest Phase 5 rescoring results."""
+    with _phase5_lock:
+        if _phase5_last_result is None:
+            raise HTTPException(404, "No Phase 5 results available. Run /phase5/rescore first.")
+        return _phase5_last_result
+
+
+@app.get("/phase5/presets")
+def get_phase5_presets():
+    """Return available Phase 5 weight presets and their weights."""
+    presets = {}
+    for name in list_presets():
+        presets[name] = get_preset(name)
+    return {"presets": presets}
 
 
 @app.get("/logs")

@@ -12,6 +12,7 @@ Key optimizations over the original:
   - Full NSGA-II Pareto sort only every N generations for front reporting
 """
 
+import json
 import time
 import traceback
 import numpy as np
@@ -21,6 +22,9 @@ from pathlib import Path
 from scoring_gpu import GpuScorer
 from codon_data import CFTR_PROTEIN, SYNONYMOUS_CODONS, HUMAN_FREQ
 from persistence import save_checkpoint, load_checkpoint
+
+# Log file for top 10 Stage 1 candidates (for manual Phase 5 testing)
+STAGE1_TOP10_LOG = "stage1_top10_candidates.json"
 
 # Lazy import to avoid circular -- main.py sets these
 _log_fn = None
@@ -347,6 +351,7 @@ def run_optimization(
                             "repeat_score": float(selected_obj[idx, 5]),
                             "codon_pair_score": float(selected_obj[idx, 6]),
                             "composite": float(combined_composite[top_indices[idx]]),
+                            "coding_sequence": _codons_to_rna(combined_pop[top_indices[idx]], syn_lookup),
                         })
                     pareto_candidates.sort(key=lambda x: x["composite"], reverse=True)
                 except Exception:
@@ -448,6 +453,36 @@ def _codons_to_rna(codon_choices, syn_lookup):
     return "".join(rna)
 
 
+def _write_stage1_top10_log(results_path: Path, run_id: str, population, syn_lookup):
+    """Write top 10 Pareto candidates to a JSON log for manual Phase 5 testing."""
+    with state.lock:
+        pareto = state.pareto_front or []
+    top10 = pareto[:10]
+    # Fallback: if no Pareto front yet, build from top of population
+    if not top10 and population is not None and syn_lookup is not None:
+        for i in range(min(10, len(population))):
+            rna = _codons_to_rna(population[i], syn_lookup)
+            top10.append({"index": i, "coding_sequence": rna})
+    if not top10:
+        return
+    # Add id for Phase 5 compatibility
+    candidates = []
+    for i, c in enumerate(top10):
+        cand = dict(c)
+        cand["id"] = cand.get("id", f"candidate_{i}")
+        candidates.append(cand)
+    log_data = {
+        "run_id": run_id,
+        "timestamp": datetime.now().isoformat(),
+        "count": len(candidates),
+        "candidates": candidates,
+    }
+    log_path = results_path / STAGE1_TOP10_LOG
+    with open(log_path, "w") as f:
+        json.dump(log_data, f, indent=2)
+    _log("INFO", f"Stage 1 top 10 candidates written to {log_path}")
+
+
 def _save_checkpoint(results_path, run_id, gen, population, syn_lookup, final=False):
     with state.lock:
         data = {
@@ -470,6 +505,9 @@ def _save_checkpoint(results_path, run_id, gen, population, syn_lookup, final=Fa
         for choice_row in population[:min(10, len(population))]:
             top_rnas.append(_codons_to_rna(choice_row, syn_lookup))
         data["top_rna_sequences"] = top_rnas
+
+    if final:
+        _write_stage1_top10_log(results_path, run_id, population, syn_lookup)
 
     suffix = "_FINAL" if final else f"_gen{gen}"
     filename = results_path / f"optimization_{run_id}{suffix}.json"

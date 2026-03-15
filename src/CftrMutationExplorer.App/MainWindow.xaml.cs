@@ -5,7 +5,7 @@ namespace CftrMutationExplorer.App;
 
 public partial class MainWindow : Window
 {
-    private const int MrnaTabIndex = 7;
+    private const int StructureExplorerIndex = 0;
     private GridLength _savedLeftWidth = new(300);
     private GridLength _savedRightWidth = new(320);
 
@@ -18,8 +18,8 @@ public partial class MainWindow : Window
     {
         if (e.Source != MainTabControl) return;
 
-        bool isMrna = MainTabControl.SelectedIndex == MrnaTabIndex;
-        SetSidePanelVisibility(!isMrna);
+        bool isStructure = MainTabControl.SelectedIndex == StructureExplorerIndex;
+        SetSidePanelVisibility(isStructure);
     }
 
     private void SetSidePanelVisibility(bool visible)
@@ -47,7 +47,6 @@ public partial class MainWindow : Window
         LeftSplitter.Visibility = vis;
         RightPanel.Visibility = vis;
         RightSplitter.Visibility = vis;
-        LoadDemoButton.Visibility = vis;
         RunComparisonButton.Visibility = vis;
 
         LeftSplitterColumn.Width = visible ? GridLength.Auto : new GridLength(0);

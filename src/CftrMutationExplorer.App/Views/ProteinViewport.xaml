@@ -15,21 +15,37 @@
         <Border Grid.Row="0" Background="{StaticResource SurfaceMediumBrush}"
                 Padding="8,4" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <WrapPanel>
+                <ContentControl Style="{StaticResource InfoIcon}" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <ContentControl.ToolTip>
+                        <ToolTip MaxWidth="340" Padding="10,8">
+                            <StackPanel>
+                                <TextBlock Text="3D Viewport" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
+                                    View: Reference only, Mutant only, or Overlay. Mutation Site centers on F508. Color: by chain, residue type, B-factor, or single. Size: atom radius.
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </ContentControl.ToolTip>
+                </ContentControl>
                 <TextBlock Text="View:" VerticalAlignment="Center"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            Margin="0,0,6,0" FontSize="11" />
 
                 <Button Content="Reference" Margin="0,0,4,0" Padding="8,3"
                         Command="{Binding SetViewModeCommand}" CommandParameter="ReferenceOnly"
+                        ToolTip="Show only the reference structure."
                         FontSize="11" />
                 <Button Content="Mutant" Margin="0,0,4,0" Padding="8,3"
                         Command="{Binding SetViewModeCommand}" CommandParameter="MutantOnly"
+                        ToolTip="Show only the mutant structure."
                         FontSize="11" />
                 <Button Content="Overlay" Margin="0,0,4,0" Padding="8,3"
                         Command="{Binding SetViewModeCommand}" CommandParameter="Overlay"
+                        ToolTip="Show both structures overlaid for comparison."
                         FontSize="11" />
                 <Button Content="Mutation Site" Margin="0,0,8,0" Padding="8,3"
                         Command="{Binding FocusOnMutationSiteCommand}"
+                        ToolTip="Center the camera on the F508 mutation site."
                         FontSize="11" />
 
                 <Separator Background="{StaticResource BorderBrush}" Width="1" Margin="4,2" />
@@ -80,9 +96,13 @@
                            FontSize="11" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
                     <Button Content="Reset Camera" Padding="6,2" FontSize="10"
-                            Click="ResetCamera_Click" Margin="4,0,0,0" />
+                            Click="ResetCamera_Click"
+                            ToolTip="Reset camera to default orientation."
+                            Margin="4,0,0,0" />
                     <Button Content="Zoom All" Padding="6,2" FontSize="10"
-                            Click="ZoomExtents_Click" Margin="4,0,0,0" />
+                            Click="ZoomExtents_Click"
+                            ToolTip="Zoom to fit all atoms in view."
+                            Margin="4,0,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>

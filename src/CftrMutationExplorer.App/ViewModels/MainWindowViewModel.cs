@@ -43,6 +43,9 @@ public partial class MainWindowViewModel : ObservableObject
     private MrnaDesignerViewModel _mrnaDesigner;
 
     [ObservableProperty]
+    private Phase5ViewModel _phase5;
+
+    [ObservableProperty]
     private string _statusMessage = "Ready — Load a protein structure to begin";
 
     [ObservableProperty]
@@ -73,9 +76,12 @@ public partial class MainWindowViewModel : ObservableObject
         _export = new ExportViewModel(reportExportService, annotationRepository);
         _bindingPockets = new BindingPocketViewModel(bindingPocketService);
         _mrnaDesigner = new MrnaDesignerViewModel(pythonServiceManager, mrnaApiClient);
+        _phase5 = new Phase5ViewModel(mrnaApiClient);
 
         _referenceLoader.StructureLoaded += OnStructureLoaded;
         _mutantLoader.StructureLoaded += OnStructureLoaded;
+
+        _ = LoadDemoData();
     }
 
     private void OnStructureLoaded(object? sender, ProteinStructure structure)
@@ -99,6 +105,15 @@ public partial class MainWindowViewModel : ObservableObject
         {
             RunComparison();
         }
+    }
+
+    [RelayCommand]
+    private void SetSelectedTab(object? param)
+    {
+        if (param is int i)
+            SelectedTabIndex = i;
+        else if (param is string s && int.TryParse(s, out var n))
+            SelectedTabIndex = n;
     }
 
     [RelayCommand]
